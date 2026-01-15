@@ -11,21 +11,27 @@ interface AssigneeGridProps {
   data: AssigneeStats[]
 }
 
-const ASSIGNEE_COLORS: Record<string, { color: string; glow: string }> = {
-  '유상욱': { color: '#00f5ff', glow: 'cyan' },
-  '최효준': { color: '#a855f7', glow: 'purple' },
-  '김다영': { color: '#ff00ff', glow: 'magenta' },
-  '김다슬': { color: '#ec4899', glow: 'pink' },
+// 동적 색상 팔레트 - 새 담당자 추가 시 자동 할당
+const COLOR_PALETTE = [
+  { color: '#00f5ff', glow: 'cyan' },
+  { color: '#a855f7', glow: 'purple' },
+  { color: '#ff00ff', glow: 'magenta' },
+  { color: '#ec4899', glow: 'pink' },
+  { color: '#22c55e', glow: 'green' },
+  { color: '#f97316', glow: 'orange' },
+  { color: '#3b82f6', glow: 'blue' },
+  { color: '#eab308', glow: 'yellow' },
+]
+
+function getAssigneeColor(index: number) {
+  return COLOR_PALETTE[index % COLOR_PALETTE.length]
 }
 
 export function AssigneeGrid({ data }: AssigneeGridProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {data.map((assignee, index) => {
-        const colorConfig = ASSIGNEE_COLORS[assignee.assignee] || {
-          color: '#3b82f6',
-          glow: 'blue',
-        }
+        const colorConfig = getAssigneeColor(index)
 
         return (
           <Link

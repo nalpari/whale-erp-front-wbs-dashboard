@@ -10,6 +10,7 @@ interface AnimatedCounterProps {
   suffix?: string
   prefix?: string
   decimals?: number
+  style?: React.CSSProperties
 }
 
 export function AnimatedCounter({
@@ -19,6 +20,7 @@ export function AnimatedCounter({
   suffix = '',
   prefix = '',
   decimals = 0,
+  style,
 }: AnimatedCounterProps) {
   const ref = useRef<HTMLSpanElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
@@ -44,6 +46,7 @@ export function AnimatedCounter({
     <motion.span
       ref={ref}
       className={`tabular-nums ${className}`}
+      style={style}
       initial={{ opacity: 0, scale: 0.5 }}
       animate={isInView ? { opacity: 1, scale: 1 } : {}}
       transition={{ duration: 0.5, ease: 'easeOut' }}

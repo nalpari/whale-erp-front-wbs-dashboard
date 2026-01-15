@@ -113,3 +113,57 @@ export async function getAssigneeStats(): Promise<AssigneeStats[]> {
     return { assignee, total, completed, inProgress, pending, progress, categories }
   })
 }
+
+export interface UpdateTaskInput {
+  progress?: number
+  start_date?: string | null
+  due_date?: string | null
+}
+
+export async function updateTask(taskId: number, updates: UpdateTaskInput): Promise<Task> {
+  const { data, error } = await supabase
+    .from('tasks')
+    .update({
+      ...updates,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', taskId)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+export interface CreateTaskInput {
+  category: string
+  task_title: string
+  description?: string | null
+  assignee?: string | null
+  start_date?: string | null
+  due_date?: string | null
+  progress?: number
+  memo?: string | null
+}
+
+export async function createTask(input: CreateTaskInput): Promise<Task> {
+  const { data, error } = await supabase
+    .from('tasks')
+    .insert({
+      category: input.category,
+      task_title: input.task_title,
+      description: input.description ?? null,
+      assignee: input.assignee ?? null,
+      start_date: input.start_date ?? null,
+      due_date: input.due_date ?? null,
+      progress: input.progress ?? 0,
+      memo: input.memo ?? null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}

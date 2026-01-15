@@ -1,11 +1,11 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { getTasksByAssignee, getAssigneeStats, getCategoryStats, Task } from '@/lib/supabase'
+import { getTasksByAssignee } from '@/lib/supabase'
 import { Header } from '@/components/layout/Header'
 import { GlowCard } from '@/components/ui/GlowCard'
 import { ProgressRing } from '@/components/ui/ProgressRing'
 import { AnimatedCounter } from '@/components/ui/AnimatedCounter'
-import { AssigneeTaskList } from './AssigneeTaskList'
+import { AssigneeTaskSection } from './AssigneeTaskSection'
 import { AssigneeCategoryChart } from './AssigneeCategoryChart'
 import { ArrowLeft, CheckCircle2, Clock, ListTodo, Calendar } from 'lucide-react'
 
@@ -235,7 +235,7 @@ export default async function AssigneePage({ params }: PageProps) {
         <section>
           <GlowCard glowColor={colorConfig.glow as any} delay={0.5} className="p-6">
             <h2 className="text-xl font-bold mb-6 gradient-text">전체 태스크 목록</h2>
-            <AssigneeTaskList tasks={tasks} color={colorConfig.color} />
+            <AssigneeTaskSection initialTasks={tasks} color={colorConfig.color} />
           </GlowCard>
         </section>
       </main>

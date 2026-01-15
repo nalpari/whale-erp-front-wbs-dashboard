@@ -92,14 +92,9 @@ export default async function Home() {
 
             {/* Legend */}
             <div className="mt-6 flex flex-wrap justify-center gap-4">
-              {assigneeStats.map((stat) => {
-                const colors: Record<string, string> = {
-                  '유상욱': '#00f5ff',
-                  '최효준': '#a855f7',
-                  '김다영': '#ff00ff',
-                  '김다슬': '#ec4899',
-                }
-                const color = colors[stat.assignee] || '#3b82f6'
+              {assigneeStats.map((stat, index) => {
+                const colorPalette = ['#00f5ff', '#a855f7', '#ff00ff', '#ec4899', '#22c55e', '#f97316', '#3b82f6', '#eab308']
+                const color = colorPalette[index % colorPalette.length]
 
                 return (
                   <div key={stat.assignee} className="flex items-center gap-2">

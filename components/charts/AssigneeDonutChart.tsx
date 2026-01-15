@@ -9,20 +9,16 @@ interface AssigneeDonutChartProps {
   className?: string
 }
 
-const ASSIGNEE_COLORS: Record<string, string> = {
-  '유상욱': '#00f5ff',
-  '최효준': '#a855f7',
-  '김다영': '#ff00ff',
-  '김다슬': '#ec4899',
-}
+// 동적 색상 팔레트 - 새 담당자 추가 시 자동 할당
+const COLOR_PALETTE = ['#00f5ff', '#a855f7', '#ff00ff', '#ec4899', '#22c55e', '#f97316', '#3b82f6', '#eab308']
 
 export function AssigneeDonutChart({ data, className = '' }: AssigneeDonutChartProps) {
-  const chartData = data.map(item => ({
+  const chartData = data.map((item, index) => ({
     name: item.assignee,
     value: item.total,
     progress: item.progress,
     completed: item.completed,
-    color: ASSIGNEE_COLORS[item.assignee] || '#3b82f6',
+    color: COLOR_PALETTE[index % COLOR_PALETTE.length],
   }))
 
   const total = chartData.reduce((sum, item) => sum + item.value, 0)

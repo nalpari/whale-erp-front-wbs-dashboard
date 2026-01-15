@@ -1,9 +1,12 @@
 'use client'
 
+import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { LayoutDashboard, Activity } from 'lucide-react'
+import { LayoutDashboard, Activity, Plus } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import { TaskCreateModal } from '@/components/ui/TaskCreateModal'
 
 interface HeaderProps {
   title?: string
@@ -11,6 +14,9 @@ interface HeaderProps {
 }
 
 export function Header({ title = 'WBS Dashboard', subtitle }: HeaderProps) {
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const router = useRouter()
+
   const now = new Date()
   const dateStr = now.toLocaleDateString('ko-KR', {
     year: 'numeric',
@@ -18,6 +24,10 @@ export function Header({ title = 'WBS Dashboard', subtitle }: HeaderProps) {
     day: 'numeric',
     weekday: 'long',
   })
+
+  const handleTaskCreated = () => {
+    router.refresh()
+  }
 
   return (
     <motion.header
@@ -94,6 +104,25 @@ export function Header({ title = 'WBS Dashboard', subtitle }: HeaderProps) {
               </p>
             </div>
 
+            {/* Add Task Button */}
+            <motion.button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium"
+              style={{
+                background: 'linear-gradient(135deg, var(--neon-cyan), var(--neon-purple))',
+                color: 'var(--bg-primary)',
+                boxShadow: '0 0 20px rgba(0, 245, 255, 0.3)',
+              }}
+              whileHover={{
+                scale: 1.05,
+                boxShadow: '0 0 30px rgba(0, 245, 255, 0.5)',
+              }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">Task 등록</span>
+            </motion.button>
+
             {/* Activity icon */}
             <motion.div
               className="w-10 h-10 rounded-lg flex items-center justify-center cursor-pointer"
@@ -115,6 +144,13 @@ export function Header({ title = 'WBS Dashboard', subtitle }: HeaderProps) {
           </div>
         </div>
       </div>
+
+      {/* Task Create Modal */}
+      <TaskCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={handleTaskCreated}
+      />
     </motion.header>
   )
 }
