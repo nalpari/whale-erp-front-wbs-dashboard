@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# reference
+.mcp.json
+/docs
+
+# Auto Claude data directory
+.auto-claude/

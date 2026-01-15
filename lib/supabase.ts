@@ -1,0 +1,115 @@
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+export interface Task {
+  id: number
+  num: number
+  category: string
+  task_title: string
+  description: string | null
+  assignee: string | null
+  start_date: string | null
+  due_date: string | null
+  progress: number
+  memo: string | null
+  created_at: string
+  updated_at: string
+}
+
+export async function getTasks(): Promise<Task[]> {
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('*')
+    .order('num', { ascending: true })
+
+  if (error) throw error
+  return data || []
+}
+
+export async function getTasksByAssignee(assignee: string): Promise<Task[]> {
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('*')
+    .eq('assignee', assignee)
+    .order('num', { ascending: true })
+
+  if (error) throw error
+  return data || []
+}
+
+export async function getAssignees(): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('assignee')
+    .not('assignee', 'is', null)
+
+  if (error) throw error
+  const unique = [...new Set(data?.map(t => t.assignee).filter(Boolean))]
+  return unique as string[]
+}
+
+export async function getCategories(): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('category')
+
+  if (error) throw error
+  const unique = [...new Set(data?.map(t => t.category).filter(Boolean))]
+  return unique as string[]
+}
+
+export interface CategoryStats {
+  category: string
+  total: number
+  completed: number
+  inProgress: number
+  pending: number
+  progress: number
+}
+
+export async function getCategoryStats(): Promise<CategoryStats[]> {
+  const tasks = await getTasks()
+  const categories = [...new Set(tasks.map(t => t.category))]
+
+  return categories.map(category => {
+    const categoryTasks = tasks.filter(t => t.category === category)
+    const total = categoryTasks.length
+    const completed = categoryTasks.filter(t => t.progress === 100).length
+    const inProgress = categoryTasks.filter(t => t.progress > 0 && t.progress < 100).length
+    const pending = categoryTasks.filter(t => t.progress === 0).length
+    const progress = total > 0 ? Math.round(categoryTasks.reduce((sum, t) => sum + t.progress, 0) / total) : 0
+
+    return { category, total, completed, inProgress, pending, progress }
+  })
+}
+
+export interface AssigneeStats {
+  assignee: string
+  total: number
+  completed: number
+  inProgress: number
+  pending: number
+  progress: number
+  categories: string[]
+}
+
+export async function getAssigneeStats(): Promise<AssigneeStats[]> {
+  const tasks = await getTasks()
+  const assignees = [...new Set(tasks.map(t => t.assignee).filter(Boolean))] as string[]
+
+  return assignees.map(assignee => {
+    const assigneeTasks = tasks.filter(t => t.assignee === assignee)
+    const total = assigneeTasks.length
+    const completed = assigneeTasks.filter(t => t.progress === 100).length
+    const inProgress = assigneeTasks.filter(t => t.progress > 0 && t.progress < 100).length
+    const pending = assigneeTasks.filter(t => t.progress === 0).length
+    const progress = total > 0 ? Math.round(assigneeTasks.reduce((sum, t) => sum + t.progress, 0) / total) : 0
+    const categories = [...new Set(assigneeTasks.map(t => t.category))]
+
+    return { assignee, total, completed, inProgress, pending, progress, categories }
+  })
+}
