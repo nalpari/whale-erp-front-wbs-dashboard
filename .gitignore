@@ -43,6 +43,7 @@ next-env.d.ts
 # reference
 .mcp.json
 /docs
+/.playwright-mcp/
 
 # Auto Claude data directory
 .auto-claude/
