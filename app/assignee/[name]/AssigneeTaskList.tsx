@@ -2,16 +2,17 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, ChevronDown, Calendar, CalendarDays, Folder, Edit2, X, Loader2, Percent, Check } from 'lucide-react'
+import { Search, ChevronDown, Calendar, CalendarDays, Folder, Edit2, X, Loader2, Percent, Check, Trash2 } from 'lucide-react'
 import { Task } from '@/lib/supabase'
 
 interface AssigneeTaskListProps {
   tasks: Task[]
   color: string
   onSaveTask?: (taskId: number, progress: number, startDate: string | null, dueDate: string | null) => Promise<void>
+  onDeleteTask?: (taskId: number) => Promise<void>
 }
 
-export function AssigneeTaskList({ tasks, color, onSaveTask }: AssigneeTaskListProps) {
+export function AssigneeTaskList({ tasks, color, onSaveTask, onDeleteTask }: AssigneeTaskListProps) {
   const [search, setSearch] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [expandedTask, setExpandedTask] = useState<number | null>(null)
@@ -22,6 +23,7 @@ export function AssigneeTaskList({ tasks, color, onSaveTask }: AssigneeTaskListP
   const [editStartDate, setEditStartDate] = useState('')
   const [editDueDate, setEditDueDate] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isDeletingId, setIsDeletingId] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const categories = [...new Set(tasks.map(t => t.category))]
@@ -62,6 +64,26 @@ export function AssigneeTaskList({ tasks, color, onSaveTask }: AssigneeTaskListP
       setError(err instanceof Error ? err.message : '저장 중 오류가 발생했습니다')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleDelete = async (task: Task, e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!onDeleteTask) return
+
+    const confirmed = window.confirm(`"${task.task_title}" 태스크를 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`)
+    if (!confirmed) return
+
+    setIsDeletingId(task.id)
+    setError(null)
+
+    try {
+      await onDeleteTask(task.id)
+      setExpandedTask(null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '삭제 중 오류가 발생했습니다')
+    } finally {
+      setIsDeletingId(null)
     }
   }
 
@@ -393,21 +415,44 @@ export function AssigneeTaskList({ tasks, color, onSaveTask }: AssigneeTaskListP
                                 </div>
                               )}
 
-                              {/* 수정 버튼 */}
-                              {onSaveTask && (
-                                <div className="flex justify-end">
-                                  <button
-                                    onClick={(e) => handleStartEdit(task, e)}
-                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-all hover:scale-105"
-                                    style={{
-                                      background: `${color}20`,
-                                      border: `1px solid ${color}40`,
-                                      color: color,
-                                    }}
-                                  >
-                                    <Edit2 className="w-4 h-4" />
-                                    <span className="text-sm font-medium">수정</span>
-                                  </button>
+                              {/* 수정/삭제 버튼 */}
+                              {(onSaveTask || onDeleteTask) && (
+                                <div className="flex justify-end gap-2">
+                                  {onSaveTask && (
+                                    <button
+                                      onClick={(e) => handleStartEdit(task, e)}
+                                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-all hover:scale-105"
+                                      style={{
+                                        background: `${color}20`,
+                                        border: `1px solid ${color}40`,
+                                        color: color,
+                                      }}
+                                    >
+                                      <Edit2 className="w-4 h-4" />
+                                      <span className="text-sm font-medium">수정</span>
+                                    </button>
+                                  )}
+                                  {onDeleteTask && (
+                                    <button
+                                      onClick={(e) => handleDelete(task, e)}
+                                      disabled={isDeletingId === task.id}
+                                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-all hover:scale-105 disabled:opacity-50"
+                                      style={{
+                                        background: 'rgba(239, 68, 68, 0.15)',
+                                        border: '1px solid rgba(239, 68, 68, 0.4)',
+                                        color: '#ef4444',
+                                      }}
+                                    >
+                                      {isDeletingId === task.id ? (
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                      ) : (
+                                        <Trash2 className="w-4 h-4" />
+                                      )}
+                                      <span className="text-sm font-medium">
+                                        {isDeletingId === task.id ? '삭제 중...' : '삭제'}
+                                      </span>
+                                    </button>
+                                  )}
                                 </div>
                               )}
                             </>

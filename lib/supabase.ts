@@ -135,6 +135,15 @@ export async function updateTask(taskId: number, updates: UpdateTaskInput): Prom
   return data
 }
 
+export async function deleteTask(taskId: number): Promise<void> {
+  const { error } = await supabase
+    .from('tasks')
+    .delete()
+    .eq('id', taskId)
+
+  if (error) throw error
+}
+
 export interface CreateTaskInput {
   category: string
   task_title: string
