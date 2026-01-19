@@ -5,6 +5,27 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
+export type TaskStatus = '대기중' | '진행중' | '완료' | '이슈' | '버그'
+
+export const TASK_STATUS_LIST: TaskStatus[] = ['대기중', '진행중', '완료', '이슈', '버그']
+
+export const getStatusColor = (status: TaskStatus): string => {
+  switch (status) {
+    case '완료':
+      return 'var(--neon-green)'
+    case '진행중':
+      return 'var(--neon-cyan)'
+    case '대기중':
+      return 'var(--text-muted)'
+    case '이슈':
+      return 'var(--neon-orange)'
+    case '버그':
+      return 'var(--neon-pink)'
+    default:
+      return 'var(--text-muted)'
+  }
+}
+
 export interface Task {
   id: number
   num: number
@@ -15,6 +36,7 @@ export interface Task {
   start_date: string | null
   due_date: string | null
   progress: number
+  status: TaskStatus
   memo: string | null
   created_at: string
   updated_at: string
@@ -116,6 +138,7 @@ export async function getAssigneeStats(): Promise<AssigneeStats[]> {
 
 export interface UpdateTaskInput {
   progress?: number
+  status?: TaskStatus
   start_date?: string | null
   due_date?: string | null
 }
@@ -152,6 +175,7 @@ export interface CreateTaskInput {
   start_date?: string | null
   due_date?: string | null
   progress?: number
+  status?: TaskStatus
   memo?: string | null
 }
 
@@ -166,6 +190,7 @@ export async function createTask(input: CreateTaskInput): Promise<Task> {
       start_date: input.start_date ?? null,
       due_date: input.due_date ?? null,
       progress: input.progress ?? 0,
+      status: input.status ?? '대기중',
       memo: input.memo ?? null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),

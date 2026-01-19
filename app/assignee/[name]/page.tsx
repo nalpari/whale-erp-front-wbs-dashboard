@@ -7,7 +7,7 @@ import { ProgressRing } from '@/components/ui/ProgressRing'
 import { AnimatedCounter } from '@/components/ui/AnimatedCounter'
 import { AssigneeTaskSection } from './AssigneeTaskSection'
 import { AssigneeCategoryChart } from './AssigneeCategoryChart'
-import { ArrowLeft, CheckCircle2, Clock, ListTodo, Calendar } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Clock, ListTodo, Calendar, AlertTriangle, Bug } from 'lucide-react'
 
 export const revalidate = 60
 
@@ -38,6 +38,8 @@ export default async function AssigneePage({ params }: PageProps) {
   const completed = tasks.filter(t => t.progress === 100).length
   const inProgress = tasks.filter(t => t.progress > 0 && t.progress < 100).length
   const pending = tasks.filter(t => t.progress === 0).length
+  const issues = tasks.filter(t => t.status === '이슈').length
+  const bugs = tasks.filter(t => t.status === '버그').length
   const overallProgress = total > 0
     ? Math.round(tasks.reduce((sum, t) => sum + t.progress, 0) / total)
     : 0
@@ -130,12 +132,14 @@ export default async function AssigneePage({ params }: PageProps) {
           </GlowCard>
 
           {/* Stats Grid */}
-          <div className="lg:col-span-2 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="lg:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-4">
             {[
               { label: '전체', value: total, icon: ListTodo, color: colorConfig.color },
               { label: '완료', value: completed, icon: CheckCircle2, color: 'var(--neon-green)' },
-              { label: '진행 중', value: inProgress, icon: Clock, color: 'var(--neon-orange)' },
+              { label: '진행 중', value: inProgress, icon: Clock, color: 'var(--neon-cyan)' },
               { label: '대기', value: pending, icon: Calendar, color: 'var(--text-muted)' },
+              { label: '이슈', value: issues, icon: AlertTriangle, color: 'var(--neon-orange)' },
+              { label: '버그', value: bugs, icon: Bug, color: 'var(--neon-pink)' },
             ].map((stat, index) => (
               <GlowCard
                 key={stat.label}

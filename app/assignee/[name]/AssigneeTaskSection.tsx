@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Task, updateTask, deleteTask } from '@/lib/supabase'
+import { Task, updateTask, deleteTask, TaskStatus } from '@/lib/supabase'
 import { AssigneeTaskList } from './AssigneeTaskList'
 
 interface AssigneeTaskSectionProps {
@@ -14,9 +14,10 @@ export function AssigneeTaskSection({ initialTasks, color }: AssigneeTaskSection
   const router = useRouter()
   const [tasks, setTasks] = useState<Task[]>(initialTasks)
 
-  const handleSaveTask = useCallback(async (taskId: number, progress: number, startDate: string | null, dueDate: string | null) => {
+  const handleSaveTask = useCallback(async (taskId: number, progress: number, status: TaskStatus, startDate: string | null, dueDate: string | null) => {
     const updatedTask = await updateTask(taskId, {
       progress,
+      status,
       start_date: startDate,
       due_date: dueDate,
     })

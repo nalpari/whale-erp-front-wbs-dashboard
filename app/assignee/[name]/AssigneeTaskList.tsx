@@ -2,13 +2,13 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, ChevronDown, Calendar, CalendarDays, Folder, Edit2, X, Loader2, Percent, Check, Trash2 } from 'lucide-react'
-import { Task } from '@/lib/supabase'
+import { Search, ChevronDown, Calendar, CalendarDays, Folder, Edit2, X, Loader2, Percent, Check, Trash2, Flag } from 'lucide-react'
+import { Task, TaskStatus, TASK_STATUS_LIST, getStatusColor } from '@/lib/supabase'
 
 interface AssigneeTaskListProps {
   tasks: Task[]
   color: string
-  onSaveTask?: (taskId: number, progress: number, startDate: string | null, dueDate: string | null) => Promise<void>
+  onSaveTask?: (taskId: number, progress: number, status: TaskStatus, startDate: string | null, dueDate: string | null) => Promise<void>
   onDeleteTask?: (taskId: number) => Promise<void>
 }
 
@@ -20,6 +20,7 @@ export function AssigneeTaskList({ tasks, color, onSaveTask, onDeleteTask }: Ass
 
   // 편집 폼 상태
   const [editProgress, setEditProgress] = useState(0)
+  const [editStatus, setEditStatus] = useState<TaskStatus>('대기중')
   const [editStartDate, setEditStartDate] = useState('')
   const [editDueDate, setEditDueDate] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -39,6 +40,7 @@ export function AssigneeTaskList({ tasks, color, onSaveTask, onDeleteTask }: Ass
     e.stopPropagation()
     setEditingTaskId(task.id)
     setEditProgress(task.progress)
+    setEditStatus(task.status)
     setEditStartDate(task.start_date ? task.start_date.split('T')[0] : '')
     setEditDueDate(task.due_date ? task.due_date.split('T')[0] : '')
     setError(null)
@@ -58,7 +60,7 @@ export function AssigneeTaskList({ tasks, color, onSaveTask, onDeleteTask }: Ass
     setError(null)
 
     try {
-      await onSaveTask(taskId, editProgress, editStartDate || null, editDueDate || null)
+      await onSaveTask(taskId, editProgress, editStatus, editStartDate || null, editDueDate || null)
       setEditingTaskId(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : '저장 중 오류가 발생했습니다')
@@ -193,6 +195,19 @@ export function AssigneeTaskList({ tasks, color, onSaveTask, onDeleteTask }: Ass
                           {task.category}
                         </span>
 
+                        {/* Status Badge */}
+                        <span
+                          className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full font-medium"
+                          style={{
+                            background: `${getStatusColor(task.status)}15`,
+                            border: `1px solid ${getStatusColor(task.status)}30`,
+                            color: getStatusColor(task.status),
+                          }}
+                        >
+                          <Flag className="w-3 h-3" />
+                          {task.status}
+                        </span>
+
                         {/* Due Date */}
                         {task.due_date && (
                           <span
@@ -285,6 +300,30 @@ export function AssigneeTaskList({ tasks, color, onSaveTask, onDeleteTask }: Ass
                                     {editProgress}%
                                   </div>
                                 </div>
+                              </div>
+
+                              {/* 상태 선택 */}
+                              <div className="space-y-2">
+                                <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                                  <Flag className="w-4 h-4" style={{ color: 'var(--neon-magenta)' }} />
+                                  상태
+                                </label>
+                                <select
+                                  value={editStatus}
+                                  onChange={(e) => setEditStatus(e.target.value as TaskStatus)}
+                                  className="w-full px-3 py-2 rounded-lg outline-none text-sm cursor-pointer"
+                                  style={{
+                                    background: 'rgba(255, 255, 255, 0.03)',
+                                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                                    color: 'var(--text-primary)',
+                                  }}
+                                >
+                                  {TASK_STATUS_LIST.map((s) => (
+                                    <option key={s} value={s} style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                                      {s}
+                                    </option>
+                                  ))}
+                                </select>
                               </div>
 
                               {/* 날짜 입력 */}

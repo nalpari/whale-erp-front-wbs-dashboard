@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Calendar, CalendarDays, Percent, Loader2 } from 'lucide-react'
-import { Task } from '@/lib/supabase'
+import { X, Calendar, CalendarDays, Percent, Loader2, Flag } from 'lucide-react'
+import { Task, TaskStatus, TASK_STATUS_LIST } from '@/lib/supabase'
 
 interface AnchorRect {
   top: number
@@ -16,13 +16,14 @@ interface TaskEditModalProps {
   task: Task | null
   isOpen: boolean
   onClose: () => void
-  onSave: (taskId: number, progress: number, startDate: string | null, dueDate: string | null) => Promise<void>
+  onSave: (taskId: number, progress: number, status: TaskStatus, startDate: string | null, dueDate: string | null) => Promise<void>
   color?: string
   anchorRect?: AnchorRect | null
 }
 
 export function TaskEditModal({ task, isOpen, onClose, onSave, color = 'var(--neon-cyan)', anchorRect }: TaskEditModalProps) {
   const [progress, setProgress] = useState(0)
+  const [status, setStatus] = useState<TaskStatus>('대기중')
   const [startDate, setStartDate] = useState('')
   const [dueDate, setDueDate] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -31,6 +32,7 @@ export function TaskEditModal({ task, isOpen, onClose, onSave, color = 'var(--ne
   useEffect(() => {
     if (task) {
       setProgress(task.progress)
+      setStatus(task.status)
       setStartDate(task.start_date ? task.start_date.split('T')[0] : '')
       setDueDate(task.due_date ? task.due_date.split('T')[0] : '')
       setError(null)
@@ -44,7 +46,7 @@ export function TaskEditModal({ task, isOpen, onClose, onSave, color = 'var(--ne
     setError(null)
 
     try {
-      await onSave(task.id, progress, startDate || null, dueDate || null)
+      await onSave(task.id, progress, status, startDate || null, dueDate || null)
       onClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : '저장 중 오류가 발생했습니다')
@@ -171,6 +173,30 @@ export function TaskEditModal({ task, isOpen, onClose, onSave, color = 'var(--ne
                     {progress}%
                   </div>
                 </div>
+              </div>
+
+              {/* Status Select */}
+              <div className="space-y-3">
+                <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                  <Flag className="w-4 h-4" style={{ color: 'var(--neon-magenta)' }} />
+                  상태
+                </label>
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value as TaskStatus)}
+                  className="w-full px-4 py-3 rounded-xl outline-none transition-all cursor-pointer"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    color: 'var(--text-primary)',
+                  }}
+                >
+                  {TASK_STATUS_LIST.map((s) => (
+                    <option key={s} value={s} style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Date Inputs */}

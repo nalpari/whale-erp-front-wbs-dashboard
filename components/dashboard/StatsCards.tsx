@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { CheckCircle2, Clock, ListTodo, TrendingUp } from 'lucide-react'
+import { CheckCircle2, Clock, ListTodo, TrendingUp, AlertTriangle, Bug } from 'lucide-react'
 import { GlowCard } from '@/components/ui/GlowCard'
 import { AnimatedCounter } from '@/components/ui/AnimatedCounter'
 
@@ -10,6 +10,8 @@ interface StatsCardsProps {
   completed: number
   inProgress: number
   pending: number
+  issues: number
+  bugs: number
   overallProgress: number
 }
 
@@ -18,6 +20,8 @@ export function StatsCards({
   completed,
   inProgress,
   pending,
+  issues,
+  bugs,
   overallProgress,
 }: StatsCardsProps) {
   const stats = [
@@ -44,6 +48,22 @@ export function StatsCards({
       color: 'orange',
       gradient: 'from-orange-500 to-amber-500',
       iconColor: 'var(--neon-orange)',
+    },
+    {
+      label: '이슈',
+      value: issues,
+      icon: AlertTriangle,
+      color: 'orange',
+      gradient: 'from-orange-500 to-yellow-500',
+      iconColor: 'var(--neon-orange)',
+    },
+    {
+      label: '버그',
+      value: bugs,
+      icon: Bug,
+      color: 'pink',
+      gradient: 'from-pink-500 to-red-500',
+      iconColor: 'var(--neon-pink)',
     },
     {
       label: '전체 진행률',

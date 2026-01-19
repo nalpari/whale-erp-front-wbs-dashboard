@@ -12,8 +12,9 @@ import {
   User,
   FolderOpen,
   StickyNote,
+  Flag,
 } from 'lucide-react'
-import { createTask, CreateTaskInput } from '@/lib/supabase'
+import { createTask, CreateTaskInput, TASK_STATUS_LIST, TaskStatus } from '@/lib/supabase'
 
 interface TaskCreateModalProps {
   isOpen: boolean
@@ -30,6 +31,7 @@ export function TaskCreateModal({ isOpen, onClose, onSuccess }: TaskCreateModalP
     start_date: '',
     due_date: '',
     progress: 0,
+    status: '대기중',
     memo: '',
   })
   const [isLoading, setIsLoading] = useState(false)
@@ -72,6 +74,7 @@ export function TaskCreateModal({ isOpen, onClose, onSuccess }: TaskCreateModalP
         start_date: '',
         due_date: '',
         progress: 0,
+        status: '대기중',
         memo: '',
       })
 
@@ -299,6 +302,29 @@ export function TaskCreateModal({ isOpen, onClose, onSuccess }: TaskCreateModalP
                     {formData.progress}%
                   </div>
                 </div>
+              </div>
+
+              {/* Status */}
+              <div className="space-y-2">
+                <label
+                  className="flex items-center gap-2 text-sm font-medium"
+                  style={{ color: 'var(--text-secondary)' }}
+                >
+                  <Flag className="w-4 h-4" style={{ color: 'var(--neon-magenta)' }} />
+                  상태
+                </label>
+                <select
+                  value={formData.status ?? '대기중'}
+                  onChange={(e) => handleChange('status', e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl outline-none transition-all cursor-pointer"
+                  style={inputStyle}
+                >
+                  {TASK_STATUS_LIST.map((s) => (
+                    <option key={s} value={s} style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Memo */}
