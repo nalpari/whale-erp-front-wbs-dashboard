@@ -38,6 +38,7 @@ export interface Task {
   progress: number
   status: TaskStatus
   memo: string | null
+  menu_name: string | null
   created_at: string
   updated_at: string
 }
@@ -142,6 +143,7 @@ export interface UpdateTaskInput {
   start_date?: string | null
   due_date?: string | null
   memo?: string | null
+  menu_name?: string | null
 }
 
 export async function updateTask(taskId: number, updates: UpdateTaskInput): Promise<Task> {
@@ -178,6 +180,7 @@ export interface CreateTaskInput {
   progress?: number
   status?: TaskStatus
   memo?: string | null
+  menu_name?: string | null
 }
 
 export async function createTask(input: CreateTaskInput): Promise<Task> {
@@ -193,6 +196,7 @@ export async function createTask(input: CreateTaskInput): Promise<Task> {
       progress: input.progress ?? 0,
       status: input.status ?? '대기중',
       memo: input.memo ?? null,
+      menu_name: input.menu_name ?? null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })
