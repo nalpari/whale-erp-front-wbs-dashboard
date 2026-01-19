@@ -13,6 +13,7 @@ import {
   FolderOpen,
   StickyNote,
   Flag,
+  LayoutGrid,
 } from 'lucide-react'
 import { createTask, CreateTaskInput, TASK_STATUS_LIST, TaskStatus } from '@/lib/supabase'
 
@@ -33,6 +34,7 @@ export function TaskCreateModal({ isOpen, onClose, onSuccess }: TaskCreateModalP
     progress: 0,
     status: '대기중',
     memo: '',
+    menu_name: '',
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -63,6 +65,7 @@ export function TaskCreateModal({ isOpen, onClose, onSuccess }: TaskCreateModalP
         start_date: formData.start_date || null,
         due_date: formData.due_date || null,
         memo: formData.memo || null,
+        menu_name: formData.menu_name || null,
       })
 
       // 성공 시 폼 초기화
@@ -76,6 +79,7 @@ export function TaskCreateModal({ isOpen, onClose, onSuccess }: TaskCreateModalP
         progress: 0,
         status: '대기중',
         memo: '',
+        menu_name: '',
       })
 
       onSuccess?.()
@@ -154,6 +158,25 @@ export function TaskCreateModal({ isOpen, onClose, onSuccess }: TaskCreateModalP
 
             {/* Content - Scrollable */}
             <div className="p-6 space-y-5 overflow-y-auto flex-1">
+              {/* Menu Name */}
+              <div className="space-y-2">
+                <label
+                  className="flex items-center gap-2 text-sm font-medium"
+                  style={{ color: 'var(--text-secondary)' }}
+                >
+                  <LayoutGrid className="w-4 h-4" style={{ color: 'var(--neon-cyan)' }} />
+                  메뉴명
+                </label>
+                <input
+                  type="text"
+                  value={formData.menu_name ?? ''}
+                  onChange={(e) => handleChange('menu_name', e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl outline-none transition-all focus:ring-2"
+                  style={{ ...inputStyle, '--tw-ring-color': color } as React.CSSProperties}
+                  placeholder="예: Master Data 관리, 직원 관리"
+                />
+              </div>
+
               {/* Category */}
               <div className="space-y-2">
                 <label
