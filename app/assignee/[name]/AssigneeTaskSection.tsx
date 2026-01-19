@@ -14,12 +14,13 @@ export function AssigneeTaskSection({ initialTasks, color }: AssigneeTaskSection
   const router = useRouter()
   const [tasks, setTasks] = useState<Task[]>(initialTasks)
 
-  const handleSaveTask = useCallback(async (taskId: number, progress: number, status: TaskStatus, startDate: string | null, dueDate: string | null) => {
+  const handleSaveTask = useCallback(async (taskId: number, progress: number, status: TaskStatus, startDate: string | null, dueDate: string | null, memo: string | null) => {
     const updatedTask = await updateTask(taskId, {
       progress,
       status,
       start_date: startDate,
       due_date: dueDate,
+      memo,
     })
 
     setTasks(prevTasks =>
