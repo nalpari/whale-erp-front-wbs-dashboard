@@ -141,6 +141,7 @@ export interface UpdateTaskInput {
   status?: TaskStatus
   start_date?: string | null
   due_date?: string | null
+  memo?: string | null
 }
 
 export async function updateTask(taskId: number, updates: UpdateTaskInput): Promise<Task> {

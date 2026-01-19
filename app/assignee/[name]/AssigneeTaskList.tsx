@@ -2,13 +2,13 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, ChevronDown, Calendar, CalendarDays, Folder, Edit2, X, Loader2, Percent, Check, Trash2, Flag } from 'lucide-react'
+import { Search, ChevronDown, Calendar, CalendarDays, Folder, Edit2, X, Loader2, Percent, Check, Trash2, Flag, FileText } from 'lucide-react'
 import { Task, TaskStatus, TASK_STATUS_LIST, getStatusColor } from '@/lib/supabase'
 
 interface AssigneeTaskListProps {
   tasks: Task[]
   color: string
-  onSaveTask?: (taskId: number, progress: number, status: TaskStatus, startDate: string | null, dueDate: string | null) => Promise<void>
+  onSaveTask?: (taskId: number, progress: number, status: TaskStatus, startDate: string | null, dueDate: string | null, memo: string | null) => Promise<void>
   onDeleteTask?: (taskId: number) => Promise<void>
 }
 
@@ -23,6 +23,7 @@ export function AssigneeTaskList({ tasks, color, onSaveTask, onDeleteTask }: Ass
   const [editStatus, setEditStatus] = useState<TaskStatus>('대기중')
   const [editStartDate, setEditStartDate] = useState('')
   const [editDueDate, setEditDueDate] = useState('')
+  const [editMemo, setEditMemo] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isDeletingId, setIsDeletingId] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -43,6 +44,7 @@ export function AssigneeTaskList({ tasks, color, onSaveTask, onDeleteTask }: Ass
     setEditStatus(task.status)
     setEditStartDate(task.start_date ? task.start_date.split('T')[0] : '')
     setEditDueDate(task.due_date ? task.due_date.split('T')[0] : '')
+    setEditMemo(task.memo || '')
     setError(null)
   }
 
@@ -60,7 +62,7 @@ export function AssigneeTaskList({ tasks, color, onSaveTask, onDeleteTask }: Ass
     setError(null)
 
     try {
-      await onSaveTask(taskId, editProgress, editStatus, editStartDate || null, editDueDate || null)
+      await onSaveTask(taskId, editProgress, editStatus, editStartDate || null, editDueDate || null, editMemo || null)
       setEditingTaskId(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : '저장 중 오류가 발생했습니다')
@@ -362,6 +364,26 @@ export function AssigneeTaskList({ tasks, color, onSaveTask, onDeleteTask }: Ass
                                     }}
                                   />
                                 </div>
+                              </div>
+
+                              {/* 메모 입력 */}
+                              <div className="space-y-2">
+                                <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                                  <FileText className="w-4 h-4" style={{ color: 'var(--neon-purple)' }} />
+                                  메모
+                                </label>
+                                <textarea
+                                  value={editMemo}
+                                  onChange={(e) => setEditMemo(e.target.value)}
+                                  placeholder="메모를 입력하세요..."
+                                  rows={3}
+                                  className="w-full px-3 py-2 rounded-lg outline-none text-sm resize-none"
+                                  style={{
+                                    background: 'rgba(255, 255, 255, 0.03)',
+                                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                                    color: 'var(--text-primary)',
+                                  }}
+                                />
                               </div>
 
                               {/* 에러 메시지 */}
