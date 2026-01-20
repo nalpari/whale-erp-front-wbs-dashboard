@@ -144,6 +144,9 @@ export interface UpdateTaskInput {
   due_date?: string | null
   memo?: string | null
   menu_name?: string | null
+  description?: string | null
+  task_title?: string
+  category?: string
 }
 
 export async function updateTask(taskId: number, updates: UpdateTaskInput): Promise<Task> {
@@ -184,7 +187,8 @@ export interface CreateTaskInput {
 }
 
 export async function createTask(input: CreateTaskInput): Promise<Task> {
-  const { data, error } = await supabase
+  // 먼저 insert 실행
+  const { data: insertedData, error: insertError } = await supabase
     .from('tasks')
     .insert({
       category: input.category,
@@ -200,6 +204,16 @@ export async function createTask(input: CreateTaskInput): Promise<Task> {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })
+    .select()
+    .single()
+
+  if (insertError) throw insertError
+
+  // insert된 id 값으로 num 컬럼 업데이트
+  const { data, error } = await supabase
+    .from('tasks')
+    .update({ num: insertedData.id })
+    .eq('id', insertedData.id)
     .select()
     .single()
 

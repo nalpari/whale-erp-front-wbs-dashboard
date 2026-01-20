@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Task, updateTask, deleteTask, TaskStatus } from '@/lib/supabase'
+import { Task, updateTask, deleteTask, UpdateTaskInput } from '@/lib/supabase'
 import { AssigneeTaskList } from './AssigneeTaskList'
 
 interface AssigneeTaskSectionProps {
@@ -14,15 +14,8 @@ export function AssigneeTaskSection({ initialTasks, color }: AssigneeTaskSection
   const router = useRouter()
   const [tasks, setTasks] = useState<Task[]>(initialTasks)
 
-  const handleSaveTask = useCallback(async (taskId: number, progress: number, status: TaskStatus, startDate: string | null, dueDate: string | null, memo: string | null, menuName: string | null) => {
-    const updatedTask = await updateTask(taskId, {
-      progress,
-      status,
-      start_date: startDate,
-      due_date: dueDate,
-      memo,
-      menu_name: menuName,
-    })
+  const handleUpdateField = useCallback(async (taskId: number, updates: UpdateTaskInput) => {
+    const updatedTask = await updateTask(taskId, updates)
 
     setTasks(prevTasks =>
       prevTasks.map(t => (t.id === taskId ? updatedTask : t))
@@ -45,7 +38,7 @@ export function AssigneeTaskSection({ initialTasks, color }: AssigneeTaskSection
     <AssigneeTaskList
       tasks={tasks}
       color={color}
-      onSaveTask={handleSaveTask}
+      onUpdateField={handleUpdateField}
       onDeleteTask={handleDeleteTask}
     />
   )

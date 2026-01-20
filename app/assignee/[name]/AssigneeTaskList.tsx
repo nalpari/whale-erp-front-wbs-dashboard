@@ -1,32 +1,23 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, ChevronDown, Calendar, CalendarDays, Folder, Edit2, X, Loader2, Percent, Check, Trash2, Flag, FileText, LayoutGrid } from 'lucide-react'
-import { Task, TaskStatus, TASK_STATUS_LIST, getStatusColor } from '@/lib/supabase'
+import { Search, ChevronDown, Calendar, CalendarDays, Folder, Loader2, Percent, Trash2, Flag, FileText, LayoutGrid, AlignLeft } from 'lucide-react'
+import { Task, TaskStatus, TASK_STATUS_LIST, getStatusColor, UpdateTaskInput } from '@/lib/supabase'
 
 interface AssigneeTaskListProps {
   tasks: Task[]
   color: string
-  onSaveTask?: (taskId: number, progress: number, status: TaskStatus, startDate: string | null, dueDate: string | null, memo: string | null, menuName: string | null) => Promise<void>
+  onUpdateField?: (taskId: number, updates: UpdateTaskInput) => Promise<void>
   onDeleteTask?: (taskId: number) => Promise<void>
 }
 
-export function AssigneeTaskList({ tasks, color, onSaveTask, onDeleteTask }: AssigneeTaskListProps) {
+export function AssigneeTaskList({ tasks, color, onUpdateField, onDeleteTask }: AssigneeTaskListProps) {
   const [search, setSearch] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [expandedTask, setExpandedTask] = useState<number | null>(null)
-  const [editingTaskId, setEditingTaskId] = useState<number | null>(null)
-
-  // 편집 폼 상태
-  const [editProgress, setEditProgress] = useState(0)
-  const [editStatus, setEditStatus] = useState<TaskStatus>('대기중')
-  const [editStartDate, setEditStartDate] = useState('')
-  const [editDueDate, setEditDueDate] = useState('')
-  const [editMemo, setEditMemo] = useState('')
-  const [editMenuName, setEditMenuName] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
   const [isDeletingId, setIsDeletingId] = useState<number | null>(null)
+  const [updatingFields, setUpdatingFields] = useState<Record<string, boolean>>({})
   const [error, setError] = useState<string | null>(null)
 
   const categories = [...new Set(tasks.map(t => t.category))]
@@ -38,40 +29,33 @@ export function AssigneeTaskList({ tasks, color, onSaveTask, onDeleteTask }: Ass
     return matchesSearch && matchesCategory
   })
 
-  const handleStartEdit = (task: Task, e: React.MouseEvent) => {
-    e.stopPropagation()
-    setEditingTaskId(task.id)
-    setEditProgress(task.progress)
-    setEditStatus(task.status)
-    setEditStartDate(task.start_date ? task.start_date.split('T')[0] : '')
-    setEditDueDate(task.due_date ? task.due_date.split('T')[0] : '')
-    setEditMemo(task.memo || '')
-    setEditMenuName(task.menu_name || '')
-    setError(null)
-  }
+  const handleFieldUpdate = useCallback(async (taskId: number, field: keyof UpdateTaskInput, value: unknown) => {
+    if (!onUpdateField) return
 
-  const handleCancelEdit = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setEditingTaskId(null)
-    setError(null)
-  }
-
-  const handleSave = async (taskId: number, e: React.MouseEvent) => {
-    e.stopPropagation()
-    if (!onSaveTask) return
-
-    setIsLoading(true)
+    const fieldKey = `${taskId}-${field}`
+    setUpdatingFields(prev => ({ ...prev, [fieldKey]: true }))
     setError(null)
 
     try {
-      await onSaveTask(taskId, editProgress, editStatus, editStartDate || null, editDueDate || null, editMemo || null, editMenuName || null)
-      setEditingTaskId(null)
+      await onUpdateField(taskId, { [field]: value })
     } catch (err) {
-      setError(err instanceof Error ? err.message : '저장 중 오류가 발생했습니다')
+      setError(err instanceof Error ? err.message : '업데이트 중 오류가 발생했습니다')
     } finally {
-      setIsLoading(false)
+      setUpdatingFields(prev => ({ ...prev, [fieldKey]: false }))
     }
-  }
+  }, [onUpdateField])
+
+  const handleInputKeyDown = useCallback((
+    e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
+    taskId: number,
+    field: keyof UpdateTaskInput,
+    value: unknown
+  ) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleFieldUpdate(taskId, field, value)
+    }
+  }, [handleFieldUpdate])
 
   const handleDelete = async (task: Task, e: React.MouseEvent) => {
     e.stopPropagation()
@@ -92,6 +76,8 @@ export function AssigneeTaskList({ tasks, color, onSaveTask, onDeleteTask }: Ass
       setIsDeletingId(null)
     }
   }
+
+  const isFieldUpdating = (taskId: number, field: string) => updatingFields[`${taskId}-${field}`]
 
   return (
     <div className="space-y-4">
@@ -150,7 +136,7 @@ export function AssigneeTaskList({ tasks, color, onSaveTask, onDeleteTask }: Ass
       <div className="space-y-3">
         <AnimatePresence>
           {filteredTasks.map((task, index) => {
-            const isEditing = editingTaskId === task.id
+            const isExpanded = expandedTask === task.id
 
             return (
               <motion.div
@@ -162,9 +148,9 @@ export function AssigneeTaskList({ tasks, color, onSaveTask, onDeleteTask }: Ass
                 className="rounded-xl overflow-hidden cursor-pointer"
                 style={{
                   background: 'rgba(255, 255, 255, 0.02)',
-                  border: isEditing ? `1px solid ${color}50` : '1px solid rgba(255, 255, 255, 0.05)',
+                  border: isExpanded ? `1px solid ${color}50` : '1px solid rgba(255, 255, 255, 0.05)',
                 }}
-                onClick={() => !isEditing && setExpandedTask(expandedTask === task.id ? null : task.id)}
+                onClick={() => setExpandedTask(isExpanded ? null : task.id)}
               >
                 <div className="p-4">
                   <div className="flex items-start gap-4">
@@ -270,9 +256,9 @@ export function AssigneeTaskList({ tasks, color, onSaveTask, onDeleteTask }: Ass
                     </div>
                   </div>
 
-                  {/* Expanded Content */}
+                  {/* Expanded Edit Form */}
                   <AnimatePresence>
-                    {expandedTask === task.id && (
+                    {isExpanded && (
                       <motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
@@ -285,275 +271,268 @@ export function AssigneeTaskList({ tasks, color, onSaveTask, onDeleteTask }: Ass
                           style={{
                             borderTop: '1px solid rgba(255, 255, 255, 0.05)',
                           }}
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          {/* 편집 모드 */}
-                          {isEditing ? (
-                            <div className="space-y-4" onClick={(e) => e.stopPropagation()}>
-                              {/* 진행률 */}
-                              <div className="space-y-2">
-                                <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-                                  <Percent className="w-4 h-4" style={{ color }} />
-                                  진행률
-                                </label>
-                                <div className="flex items-center gap-4">
-                                  <input
-                                    type="range"
-                                    min="0"
-                                    max="100"
-                                    step="5"
-                                    value={editProgress}
-                                    onChange={(e) => setEditProgress(Number(e.target.value))}
-                                    className="flex-1 h-2 rounded-full appearance-none cursor-pointer"
-                                    style={{
-                                      background: `linear-gradient(to right, ${color} 0%, ${color} ${editProgress}%, rgba(255,255,255,0.1) ${editProgress}%, rgba(255,255,255,0.1) 100%)`,
-                                    }}
-                                  />
-                                  <div
-                                    className="w-14 text-center py-1.5 rounded-lg font-mono font-bold text-sm"
-                                    style={{
-                                      background: `${color}15`,
-                                      border: `1px solid ${color}30`,
-                                      color,
-                                    }}
-                                  >
-                                    {editProgress}%
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* 상태 선택 */}
-                              <div className="space-y-2">
-                                <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-                                  <Flag className="w-4 h-4" style={{ color: 'var(--neon-magenta)' }} />
-                                  상태
-                                </label>
-                                <select
-                                  value={editStatus}
-                                  onChange={(e) => setEditStatus(e.target.value as TaskStatus)}
-                                  className="w-full px-3 py-2 rounded-lg outline-none text-sm cursor-pointer"
-                                  style={{
-                                    background: 'rgba(255, 255, 255, 0.03)',
-                                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                                    color: 'var(--text-primary)',
-                                  }}
-                                >
-                                  {TASK_STATUS_LIST.map((s) => (
-                                    <option key={s} value={s} style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
-                                      {s}
-                                    </option>
-                                  ))}
-                                </select>
-                              </div>
-
-                              {/* 날짜 입력 */}
-                              <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                  <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-                                    <CalendarDays className="w-4 h-4" style={{ color }} />
-                                    시작일
-                                  </label>
-                                  <input
-                                    type="date"
-                                    value={editStartDate}
-                                    onChange={(e) => setEditStartDate(e.target.value)}
-                                    className="w-full px-3 py-2 rounded-lg outline-none text-sm"
-                                    style={{
-                                      background: 'rgba(255, 255, 255, 0.03)',
-                                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                                      color: 'var(--text-primary)',
-                                    }}
-                                  />
-                                </div>
-                                <div className="space-y-2">
-                                  <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-                                    <Calendar className="w-4 h-4" style={{ color: 'var(--neon-orange)' }} />
-                                    마감일
-                                  </label>
-                                  <input
-                                    type="date"
-                                    value={editDueDate}
-                                    onChange={(e) => setEditDueDate(e.target.value)}
-                                    className="w-full px-3 py-2 rounded-lg outline-none text-sm"
-                                    style={{
-                                      background: 'rgba(255, 255, 255, 0.03)',
-                                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                                      color: 'var(--text-primary)',
-                                    }}
-                                  />
-                                </div>
-                              </div>
-
-                              {/* 메뉴명 입력 */}
-                              <div className="space-y-2">
-                                <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-                                  <LayoutGrid className="w-4 h-4" style={{ color: 'var(--neon-cyan)' }} />
-                                  메뉴명
-                                </label>
-                                <input
-                                  type="text"
-                                  value={editMenuName}
-                                  onChange={(e) => setEditMenuName(e.target.value)}
-                                  placeholder="메뉴명을 입력하세요..."
-                                  className="w-full px-3 py-2 rounded-lg outline-none text-sm"
-                                  style={{
-                                    background: 'rgba(255, 255, 255, 0.03)',
-                                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                                    color: 'var(--text-primary)',
-                                  }}
-                                />
-                              </div>
-
-                              {/* 메모 입력 */}
-                              <div className="space-y-2">
-                                <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-                                  <FileText className="w-4 h-4" style={{ color: 'var(--neon-purple)' }} />
-                                  메모
-                                </label>
-                                <textarea
-                                  value={editMemo}
-                                  onChange={(e) => setEditMemo(e.target.value)}
-                                  placeholder="메모를 입력하세요..."
-                                  rows={3}
-                                  className="w-full px-3 py-2 rounded-lg outline-none text-sm resize-none"
-                                  style={{
-                                    background: 'rgba(255, 255, 255, 0.03)',
-                                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                                    color: 'var(--text-primary)',
-                                  }}
-                                />
-                              </div>
-
-                              {/* 에러 메시지 */}
-                              {error && (
-                                <div
-                                  className="p-2 rounded-lg text-sm"
-                                  style={{
-                                    background: 'rgba(255, 0, 100, 0.1)',
-                                    border: '1px solid rgba(255, 0, 100, 0.3)',
-                                    color: 'var(--neon-pink)',
-                                  }}
-                                >
-                                  {error}
-                                </div>
+                          {/* 설명 */}
+                          <div className="space-y-2">
+                            <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                              <AlignLeft className="w-4 h-4" style={{ color: 'var(--neon-green)' }} />
+                              설명
+                              {isFieldUpdating(task.id, 'description') && (
+                                <Loader2 className="w-3 h-3 animate-spin" style={{ color }} />
                               )}
+                            </label>
+                            <textarea
+                              defaultValue={task.description || ''}
+                              placeholder="태스크 설명을 입력하세요..."
+                              rows={3}
+                              onBlur={(e) => {
+                                if (e.target.value !== (task.description || '')) {
+                                  handleFieldUpdate(task.id, 'description', e.target.value || null)
+                                }
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                  e.preventDefault()
+                                  const target = e.target as HTMLTextAreaElement
+                                  if (target.value !== (task.description || '')) {
+                                    handleFieldUpdate(task.id, 'description', target.value || null)
+                                  }
+                                }
+                              }}
+                              className="w-full px-3 py-2 rounded-lg outline-none text-sm resize-none"
+                              style={{
+                                background: 'rgba(255, 255, 255, 0.03)',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                color: 'var(--text-primary)',
+                              }}
+                            />
+                          </div>
 
-                              {/* 버튼 */}
-                              <div className="flex justify-end gap-2 pt-2">
-                                <button
-                                  onClick={handleCancelEdit}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-all hover:scale-105"
-                                  style={{
-                                    background: 'rgba(255, 255, 255, 0.05)',
-                                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                                    color: 'var(--text-secondary)',
-                                  }}
-                                >
-                                  <X className="w-4 h-4" />
-                                  취소
-                                </button>
-                                <button
-                                  onClick={(e) => handleSave(task.id, e)}
-                                  disabled={isLoading}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all hover:scale-105 disabled:opacity-50"
-                                  style={{
-                                    background: `linear-gradient(135deg, ${color}, ${color}80)`,
-                                    color: 'var(--bg-primary)',
-                                  }}
-                                >
-                                  {isLoading ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                  ) : (
-                                    <Check className="w-4 h-4" />
-                                  )}
-                                  {isLoading ? '저장 중...' : '저장'}
-                                </button>
+                          {/* 진행률 */}
+                          <div className="space-y-2">
+                            <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                              <Percent className="w-4 h-4" style={{ color }} />
+                              진행률
+                              {isFieldUpdating(task.id, 'progress') && (
+                                <Loader2 className="w-3 h-3 animate-spin" style={{ color }} />
+                              )}
+                            </label>
+                            <div className="flex items-center gap-4">
+                              <input
+                                type="range"
+                                min="0"
+                                max="100"
+                                step="5"
+                                defaultValue={task.progress}
+                                onPointerUp={(e) => {
+                                  const newProgress = Number((e.target as HTMLInputElement).value)
+                                  if (task.status === '대기중' && newProgress > 0) {
+                                    onUpdateField?.(task.id, { progress: newProgress, status: '진행중' })
+                                  } else {
+                                    handleFieldUpdate(task.id, 'progress', newProgress)
+                                  }
+                                }}
+                                className="flex-1 h-2 rounded-full appearance-none cursor-pointer"
+                                style={{
+                                  background: `linear-gradient(to right, ${color} 0%, ${color} ${task.progress}%, rgba(255,255,255,0.1) ${task.progress}%, rgba(255,255,255,0.1) 100%)`,
+                                }}
+                              />
+                              <div
+                                className="w-14 text-center py-1.5 rounded-lg font-mono font-bold text-sm"
+                                style={{
+                                  background: `${color}15`,
+                                  border: `1px solid ${color}30`,
+                                  color,
+                                }}
+                              >
+                                {task.progress}%
                               </div>
                             </div>
-                          ) : (
-                            <>
-                              {/* 날짜 정보 (보기 모드) */}
-                              <div className="flex flex-wrap gap-4">
-                                {task.start_date && (
-                                  <div className="flex items-center gap-2">
-                                    <CalendarDays
-                                      className="w-4 h-4"
-                                      style={{ color }}
-                                    />
-                                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                      시작일
-                                    </span>
-                                    <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
-                                      {new Date(task.start_date).toLocaleDateString('ko-KR')}
-                                    </span>
-                                  </div>
-                                )}
-                                {task.due_date && (
-                                  <div className="flex items-center gap-2">
-                                    <Calendar
-                                      className="w-4 h-4"
-                                      style={{ color: 'var(--neon-orange)' }}
-                                    />
-                                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                      마감일
-                                    </span>
-                                    <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
-                                      {new Date(task.due_date).toLocaleDateString('ko-KR')}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
+                          </div>
 
-                              {/* 설명 */}
-                              {task.description && (
-                                <div
-                                  className="text-sm"
-                                  style={{ color: 'var(--text-secondary)' }}
-                                >
-                                  {task.description}
-                                </div>
+                          {/* 상태 선택 */}
+                          <div className="space-y-2">
+                            <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                              <Flag className="w-4 h-4" style={{ color: 'var(--neon-magenta)' }} />
+                              상태
+                              {isFieldUpdating(task.id, 'status') && (
+                                <Loader2 className="w-3 h-3 animate-spin" style={{ color }} />
                               )}
+                            </label>
+                            <select
+                              value={task.status}
+                              onChange={(e) => handleFieldUpdate(task.id, 'status', e.target.value as TaskStatus)}
+                              className="w-full px-3 py-2 rounded-lg outline-none text-sm cursor-pointer"
+                              style={{
+                                background: 'rgba(255, 255, 255, 0.03)',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                color: 'var(--text-primary)',
+                              }}
+                            >
+                              {TASK_STATUS_LIST.map((s) => (
+                                <option key={s} value={s} style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                                  {s}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
 
-                              {/* 수정/삭제 버튼 */}
-                              {(onSaveTask || onDeleteTask) && (
-                                <div className="flex justify-end gap-2">
-                                  {onSaveTask && (
-                                    <button
-                                      onClick={(e) => handleStartEdit(task, e)}
-                                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-all hover:scale-105"
-                                      style={{
-                                        background: `${color}20`,
-                                        border: `1px solid ${color}40`,
-                                        color: color,
-                                      }}
-                                    >
-                                      <Edit2 className="w-4 h-4" />
-                                      <span className="text-sm font-medium">수정</span>
-                                    </button>
-                                  )}
-                                  {onDeleteTask && (
-                                    <button
-                                      onClick={(e) => handleDelete(task, e)}
-                                      disabled={isDeletingId === task.id}
-                                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-all hover:scale-105 disabled:opacity-50"
-                                      style={{
-                                        background: 'rgba(239, 68, 68, 0.15)',
-                                        border: '1px solid rgba(239, 68, 68, 0.4)',
-                                        color: '#ef4444',
-                                      }}
-                                    >
-                                      {isDeletingId === task.id ? (
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                      ) : (
-                                        <Trash2 className="w-4 h-4" />
-                                      )}
-                                      <span className="text-sm font-medium">
-                                        {isDeletingId === task.id ? '삭제 중...' : '삭제'}
-                                      </span>
-                                    </button>
-                                  )}
-                                </div>
+                          {/* 날짜 입력 */}
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                                <CalendarDays className="w-4 h-4" style={{ color }} />
+                                시작일
+                                {isFieldUpdating(task.id, 'start_date') && (
+                                  <Loader2 className="w-3 h-3 animate-spin" style={{ color }} />
+                                )}
+                              </label>
+                              <input
+                                type="date"
+                                defaultValue={task.start_date ? task.start_date.split('T')[0] : ''}
+                                onChange={(e) => handleFieldUpdate(task.id, 'start_date', e.target.value || null)}
+                                onKeyDown={(e) => handleInputKeyDown(e, task.id, 'start_date', (e.target as HTMLInputElement).value || null)}
+                                className="w-full px-3 py-2 rounded-lg outline-none text-sm"
+                                style={{
+                                  background: 'rgba(255, 255, 255, 0.03)',
+                                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                                  color: 'var(--text-primary)',
+                                }}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                                <Calendar className="w-4 h-4" style={{ color: 'var(--neon-orange)' }} />
+                                마감일
+                                {isFieldUpdating(task.id, 'due_date') && (
+                                  <Loader2 className="w-3 h-3 animate-spin" style={{ color }} />
+                                )}
+                              </label>
+                              <input
+                                type="date"
+                                defaultValue={task.due_date ? task.due_date.split('T')[0] : ''}
+                                onChange={(e) => handleFieldUpdate(task.id, 'due_date', e.target.value || null)}
+                                onKeyDown={(e) => handleInputKeyDown(e, task.id, 'due_date', (e.target as HTMLInputElement).value || null)}
+                                className="w-full px-3 py-2 rounded-lg outline-none text-sm"
+                                style={{
+                                  background: 'rgba(255, 255, 255, 0.03)',
+                                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                                  color: 'var(--text-primary)',
+                                }}
+                              />
+                            </div>
+                          </div>
+
+                          {/* 메뉴명 입력 */}
+                          <div className="space-y-2">
+                            <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                              <LayoutGrid className="w-4 h-4" style={{ color: 'var(--neon-cyan)' }} />
+                              메뉴명
+                              {isFieldUpdating(task.id, 'menu_name') && (
+                                <Loader2 className="w-3 h-3 animate-spin" style={{ color }} />
                               )}
-                            </>
+                            </label>
+                            <input
+                              type="text"
+                              defaultValue={task.menu_name || ''}
+                              placeholder="메뉴명을 입력하세요..."
+                              onBlur={(e) => {
+                                if (e.target.value !== (task.menu_name || '')) {
+                                  handleFieldUpdate(task.id, 'menu_name', e.target.value || null)
+                                }
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault()
+                                  const target = e.target as HTMLInputElement
+                                  if (target.value !== (task.menu_name || '')) {
+                                    handleFieldUpdate(task.id, 'menu_name', target.value || null)
+                                  }
+                                }
+                              }}
+                              className="w-full px-3 py-2 rounded-lg outline-none text-sm"
+                              style={{
+                                background: 'rgba(255, 255, 255, 0.03)',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                color: 'var(--text-primary)',
+                              }}
+                            />
+                          </div>
+
+                          {/* 메모 입력 */}
+                          <div className="space-y-2">
+                            <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                              <FileText className="w-4 h-4" style={{ color: 'var(--neon-purple)' }} />
+                              메모
+                              {isFieldUpdating(task.id, 'memo') && (
+                                <Loader2 className="w-3 h-3 animate-spin" style={{ color }} />
+                              )}
+                            </label>
+                            <textarea
+                              defaultValue={task.memo || ''}
+                              placeholder="메모를 입력하세요..."
+                              rows={3}
+                              onBlur={(e) => {
+                                if (e.target.value !== (task.memo || '')) {
+                                  handleFieldUpdate(task.id, 'memo', e.target.value || null)
+                                }
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                  e.preventDefault()
+                                  const target = e.target as HTMLTextAreaElement
+                                  if (target.value !== (task.memo || '')) {
+                                    handleFieldUpdate(task.id, 'memo', target.value || null)
+                                  }
+                                }
+                              }}
+                              className="w-full px-3 py-2 rounded-lg outline-none text-sm resize-none"
+                              style={{
+                                background: 'rgba(255, 255, 255, 0.03)',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                color: 'var(--text-primary)',
+                              }}
+                            />
+                          </div>
+
+                          {/* 에러 메시지 */}
+                          {error && (
+                            <div
+                              className="p-2 rounded-lg text-sm"
+                              style={{
+                                background: 'rgba(255, 0, 100, 0.1)',
+                                border: '1px solid rgba(255, 0, 100, 0.3)',
+                                color: 'var(--neon-pink)',
+                              }}
+                            >
+                              {error}
+                            </div>
+                          )}
+
+                          {/* 삭제 버튼 */}
+                          {onDeleteTask && (
+                            <div className="flex justify-end pt-2">
+                              <button
+                                onClick={(e) => handleDelete(task, e)}
+                                disabled={isDeletingId === task.id}
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-all hover:scale-105 disabled:opacity-50"
+                                style={{
+                                  background: 'rgba(239, 68, 68, 0.15)',
+                                  border: '1px solid rgba(239, 68, 68, 0.4)',
+                                  color: '#ef4444',
+                                }}
+                              >
+                                {isDeletingId === task.id ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <Trash2 className="w-4 h-4" />
+                                )}
+                                <span className="text-sm font-medium">
+                                  {isDeletingId === task.id ? '삭제 중...' : '삭제'}
+                                </span>
+                              </button>
+                            </div>
                           )}
                         </div>
                       </motion.div>
