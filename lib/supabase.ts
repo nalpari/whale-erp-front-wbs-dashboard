@@ -201,3 +201,110 @@ export async function createTask(input: CreateTaskInput): Promise<Task> {
   if (error) throw error
   return data
 }
+
+// ============================================
+// Screen Designs (화면설계서)
+// ============================================
+
+export interface ScreenDesign {
+  id: number
+  document_name: string
+  file_url: string
+  file_name: string
+  author: string
+  created_at: string
+  updated_at: string
+}
+
+export async function getScreenDesigns(): Promise<ScreenDesign[]> {
+  const { data, error } = await supabase
+    .from('screen_designs')
+    .select('*')
+    .order('updated_at', { ascending: false })
+
+  if (error) throw error
+  return data || []
+}
+
+export interface UploadScreenDesignInput {
+  file: File
+  author: string
+}
+
+export async function uploadScreenDesign(input: UploadScreenDesignInput): Promise<ScreenDesign> {
+  const { file, author } = input
+
+  // Generate unique file path with safe filename (avoid non-ASCII characters)
+  const timestamp = Date.now()
+  const randomId = Math.random().toString(36).substring(2, 10)
+  const fileExtension = file.name.slice(file.name.lastIndexOf('.')).toLowerCase()
+  const safeFileName = `${timestamp}-${randomId}${fileExtension}`
+  const filePath = `uploads/${safeFileName}`
+
+  // Upload file to Supabase Storage
+  const { error: uploadError } = await supabase.storage
+    .from('screen-designs')
+    .upload(filePath, file)
+
+  if (uploadError) throw uploadError
+
+  // Get public URL
+  const { data: urlData } = supabase.storage
+    .from('screen-designs')
+    .getPublicUrl(filePath)
+
+  const fileUrl = urlData.publicUrl
+
+  // Extract document name from file name (without extension)
+  const documentName = file.name.replace(/\.[^/.]+$/, '')
+
+  // Insert record to database
+  const { data, error: insertError } = await supabase
+    .from('screen_designs')
+    .insert({
+      document_name: documentName,
+      file_url: fileUrl,
+      file_name: file.name,
+      author: author,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .select()
+    .single()
+
+  if (insertError) {
+    // Cleanup uploaded file if database insert fails
+    await supabase.storage.from('screen-designs').remove([filePath])
+    throw insertError
+  }
+
+  return data
+}
+
+export async function deleteScreenDesign(id: number): Promise<void> {
+  // First get the file info to delete from storage
+  const { data: design, error: fetchError } = await supabase
+    .from('screen_designs')
+    .select('file_url')
+    .eq('id', id)
+    .single()
+
+  if (fetchError) throw fetchError
+
+  // Extract file path from URL
+  if (design?.file_url) {
+    const urlParts = design.file_url.split('/screen-designs/')
+    if (urlParts.length > 1) {
+      const filePath = urlParts[1]
+      await supabase.storage.from('screen-designs').remove([filePath])
+    }
+  }
+
+  // Delete database record
+  const { error: deleteError } = await supabase
+    .from('screen_designs')
+    .delete()
+    .eq('id', id)
+
+  if (deleteError) throw deleteError
+}

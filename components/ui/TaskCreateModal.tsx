@@ -14,7 +14,7 @@ import {
   StickyNote,
   Flag,
 } from 'lucide-react'
-import { createTask, CreateTaskInput, TASK_STATUS_LIST, TaskStatus } from '@/lib/supabase'
+import { createTask, CreateTaskInput, TASK_STATUS_LIST } from '@/lib/supabase'
 
 interface TaskCreateModalProps {
   isOpen: boolean

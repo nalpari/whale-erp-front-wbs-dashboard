@@ -37,8 +37,11 @@ export function AnimatedCounter({
 
   useEffect(() => {
     if (isInView && !hasAnimated) {
-      spring.set(value)
-      setHasAnimated(true)
+      // Use requestAnimationFrame to avoid synchronous setState issue
+      requestAnimationFrame(() => {
+        spring.set(value)
+        setHasAnimated(true)
+      })
     }
   }, [isInView, value, spring, hasAnimated])
 
