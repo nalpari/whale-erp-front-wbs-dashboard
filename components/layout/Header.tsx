@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { LayoutDashboard, Activity, Plus, FileText } from 'lucide-react'
+import { LayoutDashboard, Activity, Plus, FileText, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
