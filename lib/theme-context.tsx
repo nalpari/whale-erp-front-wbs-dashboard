@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, ReactNode, useSyncExternalStore } from 'react'
 
 type Theme = 'dark' | 'light'
 
@@ -11,17 +11,30 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('dark')
-  const [mounted, setMounted] = useState(false)
+// Helper to safely access localStorage
+function getStoredTheme(): Theme {
+  if (typeof window === 'undefined') return 'dark'
+  return (localStorage.getItem('theme') as Theme) || 'dark'
+}
 
-  useEffect(() => {
-    setMounted(true)
-    const stored = localStorage.getItem('theme') as Theme
-    if (stored) {
-      setTheme(stored)
+// Custom hook to track mounting state without causing cascading renders
+function useIsMounted() {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  )
+}
+
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  const mounted = useIsMounted()
+  const [theme, setTheme] = useState<Theme>(() => {
+    // Initialize with stored value on client, default on server
+    if (typeof window !== 'undefined') {
+      return getStoredTheme()
     }
-  }, [])
+    return 'dark'
+  })
 
   useEffect(() => {
     if (mounted) {

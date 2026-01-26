@@ -11,7 +11,9 @@ import { ArrowLeft, CheckCircle2, Clock, ListTodo, Calendar, AlertTriangle, Bug 
 
 export const revalidate = 60
 
-const ASSIGNEE_COLORS: Record<string, { color: string; glow: string }> = {
+type GlowColor = 'cyan' | 'magenta' | 'purple' | 'pink' | 'green' | 'orange' | 'blue'
+
+const ASSIGNEE_COLORS: Record<string, { color: string; glow: GlowColor }> = {
   '유상욱': { color: '#00f5ff', glow: 'cyan' },
   '최효준': { color: '#a855f7', glow: 'purple' },
   '김다영': { color: '#ff00ff', glow: 'magenta' },
@@ -32,7 +34,7 @@ export default async function AssigneePage({ params }: PageProps) {
     notFound()
   }
 
-  const colorConfig = ASSIGNEE_COLORS[decodedName] || { color: '#3b82f6', glow: 'blue' }
+  const colorConfig = ASSIGNEE_COLORS[decodedName] || { color: '#3b82f6', glow: 'blue' as GlowColor }
 
   const total = tasks.length
   const completed = tasks.filter(t => t.progress === 100).length
@@ -91,7 +93,7 @@ export default async function AssigneePage({ params }: PageProps) {
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Profile Card */}
           <GlowCard
-            glowColor={colorConfig.glow as any}
+            glowColor={colorConfig.glow}
             delay={0.1}
             className="p-8 lg:col-span-1"
           >
@@ -143,7 +145,7 @@ export default async function AssigneePage({ params }: PageProps) {
             ].map((stat, index) => (
               <GlowCard
                 key={stat.label}
-                glowColor={index === 0 ? colorConfig.glow as any : undefined}
+                glowColor={index === 0 ? colorConfig.glow : undefined}
                 delay={0.2 + index * 0.1}
                 className="p-6"
               >
@@ -174,7 +176,7 @@ export default async function AssigneePage({ params }: PageProps) {
         {/* Charts Section */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Category Progress */}
-          <GlowCard glowColor={colorConfig.glow as any} delay={0.3} className="p-6">
+          <GlowCard glowColor={colorConfig.glow} delay={0.3} className="p-6">
             <h2 className="text-xl font-bold mb-6 gradient-text">카테고리별 진행 현황</h2>
             <AssigneeCategoryChart data={categoryData} color={colorConfig.color} />
           </GlowCard>
@@ -184,7 +186,7 @@ export default async function AssigneePage({ params }: PageProps) {
             <h2 className="text-xl font-bold mb-6 gradient-text">다가오는 마감일</h2>
             {upcomingTasks.length > 0 ? (
               <div className="space-y-3">
-                {upcomingTasks.map((task, index) => {
+                {upcomingTasks.map((task) => {
                   const dueDate = new Date(task.due_date!)
                   const today = new Date()
                   const daysLeft = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
@@ -237,7 +239,7 @@ export default async function AssigneePage({ params }: PageProps) {
 
         {/* Task List Section */}
         <section>
-          <GlowCard glowColor={colorConfig.glow as any} delay={0.5} className="p-6">
+          <GlowCard glowColor={colorConfig.glow} delay={0.5} className="p-6">
             <h2 className="text-xl font-bold mb-6 gradient-text">전체 태스크 목록</h2>
             <AssigneeTaskSection initialTasks={tasks} color={colorConfig.color} />
           </GlowCard>

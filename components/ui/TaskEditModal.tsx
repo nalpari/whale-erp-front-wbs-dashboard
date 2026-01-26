@@ -74,7 +74,7 @@ export function TaskEditModal({ task, isOpen, onClose, onSave, color = 'var(--ne
     const padding = 16
 
     // 태스크 아이템의 왼쪽 위치에 맞춤
-    let left = anchorRect.left
+    const left = anchorRect.left
     let top = anchorRect.top
 
     // 모달이 화면 아래로 벗어나면 위로 조정

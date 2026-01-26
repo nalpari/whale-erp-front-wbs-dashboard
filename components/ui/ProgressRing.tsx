@@ -142,7 +142,12 @@ export function MultiProgressRing({
   const circumference = radius * 2 * Math.PI
   const total = segments.reduce((sum, s) => sum + s.value, 0)
 
-  let currentOffset = 0
+  // Pre-compute offsets for each segment
+  const segmentOffsets = segments.reduce<number[]>((acc, segment, index) => {
+    const prevOffset = index === 0 ? 0 : acc[index - 1] + (segments[index - 1].value / total) * circumference
+    acc.push(prevOffset)
+    return acc
+  }, [])
 
   return (
     <div className={`relative inline-flex ${className}`}>
@@ -160,8 +165,7 @@ export function MultiProgressRing({
         {/* Segments */}
         {segments.map((segment, index) => {
           const segmentLength = (segment.value / total) * circumference
-          const offset = currentOffset
-          currentOffset += segmentLength
+          const offset = segmentOffsets[index]
 
           return (
             <motion.circle

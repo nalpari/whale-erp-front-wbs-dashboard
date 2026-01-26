@@ -6,7 +6,6 @@ import {
   RadialBar,
   ResponsiveContainer,
   Tooltip,
-  Legend,
 } from 'recharts'
 import { CategoryStats } from '@/lib/supabase'
 

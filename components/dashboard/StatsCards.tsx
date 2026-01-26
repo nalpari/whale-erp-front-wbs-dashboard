@@ -19,7 +19,6 @@ export function StatsCards({
   total,
   completed,
   inProgress,
-  pending,
   issues,
   bugs,
   overallProgress,
@@ -81,7 +80,7 @@ export function StatsCards({
       {stats.map((stat, index) => (
         <GlowCard
           key={stat.label}
-          glowColor={stat.color as any}
+          glowColor={stat.color as 'cyan' | 'magenta' | 'purple' | 'pink' | 'green' | 'orange' | 'blue'}
           delay={index * 0.1}
           className="p-6"
         >

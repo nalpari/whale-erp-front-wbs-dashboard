@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { User, ArrowRight, Folder } from 'lucide-react'
+import { User, ArrowRight } from 'lucide-react'
 import { GlowCard } from '@/components/ui/GlowCard'
 import { ProgressRing } from '@/components/ui/ProgressRing'
 import { AssigneeStats } from '@/lib/supabase'
@@ -39,7 +39,7 @@ export function AssigneeGrid({ data }: AssigneeGridProps) {
             href={`/assignee/${encodeURIComponent(assignee.assignee)}`}
           >
             <GlowCard
-              glowColor={colorConfig.glow as any}
+              glowColor={colorConfig.glow as 'cyan' | 'magenta' | 'purple' | 'pink' | 'green' | 'orange' | 'blue'}
               delay={index * 0.15}
               className="p-6 cursor-pointer group h-full"
             >

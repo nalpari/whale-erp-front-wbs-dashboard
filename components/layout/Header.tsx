@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { LayoutDashboard, Activity, Plus, RefreshCw } from 'lucide-react'
+import { LayoutDashboard, Activity, Plus, FileText } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { TaskCreateModal } from '@/components/ui/TaskCreateModal'
 
@@ -28,6 +28,7 @@ export function Header({ title = 'WBS Dashboard', subtitle }: HeaderProps) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [reloadInterval, setReloadInterval] = useState<ReloadInterval>('off')
   const router = useRouter()
+  const pathname = usePathname()
 
   const handleReload = useCallback(() => {
     router.refresh()
@@ -112,6 +113,44 @@ export function Header({ title = 'WBS Dashboard', subtitle }: HeaderProps) {
               )}
             </div>
           </Link>
+
+          {/* Navigation */}
+          <nav className="hidden md:flex items-center gap-2 ml-8">
+            <Link href="/">
+              <motion.div
+                className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors"
+                style={{
+                  background: pathname === '/' ? 'var(--bg-glass)' : 'transparent',
+                  color: pathname === '/' ? 'var(--neon-cyan)' : 'var(--text-secondary)',
+                  border: pathname === '/' ? '1px solid rgba(0, 245, 255, 0.3)' : '1px solid transparent',
+                }}
+                whileHover={{
+                  background: 'var(--bg-glass)',
+                  color: 'var(--neon-cyan)',
+                }}
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                <span>대시보드</span>
+              </motion.div>
+            </Link>
+            <Link href="/screen-designs">
+              <motion.div
+                className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors"
+                style={{
+                  background: pathname === '/screen-designs' ? 'var(--bg-glass)' : 'transparent',
+                  color: pathname === '/screen-designs' ? 'var(--neon-cyan)' : 'var(--text-secondary)',
+                  border: pathname === '/screen-designs' ? '1px solid rgba(0, 245, 255, 0.3)' : '1px solid transparent',
+                }}
+                whileHover={{
+                  background: 'var(--bg-glass)',
+                  color: 'var(--neon-cyan)',
+                }}
+              >
+                <FileText className="w-4 h-4" />
+                <span>화면설계서</span>
+              </motion.div>
+            </Link>
+          </nav>
 
           {/* Right section */}
           <div className="flex items-center gap-6">
