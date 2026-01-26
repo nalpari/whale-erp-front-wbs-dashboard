@@ -429,6 +429,30 @@ export function ScreenDesignUploadModal({
                 )}
               </button>
             </div>
+
+            {/* Loading Overlay */}
+            {isLoading && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 flex items-center justify-center rounded-2xl"
+                style={{
+                  background: 'rgba(0, 0, 0, 0.7)',
+                  backdropFilter: 'blur(4px)',
+                }}
+              >
+                <div className="flex flex-col items-center gap-4">
+                  <Loader2 className="w-12 h-12 animate-spin" style={{ color: 'var(--neon-cyan)' }} />
+                  <p className="text-lg font-medium" style={{ color: 'var(--text-primary)' }}>
+                    업로드 중...
+                  </p>
+                  <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                    파일을 업로드하고 있습니다. 잠시만 기다려주세요.
+                  </p>
+                </div>
+              </motion.div>
+            )}
           </motion.div>
         </motion.div>
       )}

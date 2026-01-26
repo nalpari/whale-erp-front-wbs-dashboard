@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Download, Upload, FileText, Calendar, User, Trash2, ChevronDown, Paperclip } from 'lucide-react'
-import { ScreenDesignPostWithFiles, ScreenDesignFile, deleteScreenDesignPost } from '@/lib/supabase'
+import { Download, Upload, FileText, Calendar, User, Trash2, ChevronDown, Paperclip, X } from 'lucide-react'
+import { ScreenDesignPostWithFiles, ScreenDesignFile, deleteScreenDesignPost, deleteScreenDesignFile } from '@/lib/supabase'
 import { GlowCard } from '@/components/ui/GlowCard'
 import { ScreenDesignUploadModal } from '@/components/ui/ScreenDesignUploadModal'
 import { useRouter } from 'next/navigation'
@@ -13,19 +14,55 @@ interface ScreenDesignsClientProps {
 }
 
 // File dropdown component for multiple files
-function FileDropdown({ files, onDownload }: { files: ScreenDesignFile[], onDownload: (url: string, fileName: string) => void }) {
+function FileDropdown({ 
+  files, 
+  onDownload, 
+  onDelete 
+}: { 
+  files: ScreenDesignFile[]
+  onDownload: (url: string, fileName: string) => void
+  onDelete?: (fileId: number, fileName: string) => void
+}) {
   const [isOpen, setIsOpen] = useState(false)
+  const [position, setPosition] = useState({ top: 0, left: 0 })
+  const buttonRef = useRef<HTMLButtonElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
+      if (
+        buttonRef.current?.contains(event.target as Node) ||
+        dropdownRef.current?.contains(event.target as Node)
+      ) {
+        return
       }
+      setIsOpen(false)
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  const updatePosition = () => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect()
+      setPosition({
+        top: rect.bottom + window.scrollY + 8,
+        left: rect.left + window.scrollX,
+      })
+    }
+  }
+
+  useEffect(() => {
+    if (isOpen) {
+      updatePosition()
+      window.addEventListener('scroll', updatePosition, true)
+      window.addEventListener('resize', updatePosition)
+      return () => {
+        window.removeEventListener('scroll', updatePosition, true)
+        window.removeEventListener('resize', updatePosition)
+      }
+    }
+  }, [isOpen])
 
   const formatFileSize = (bytes: number | null): string => {
     if (!bytes) return ''
@@ -64,8 +101,9 @@ function FileDropdown({ files, onDownload }: { files: ScreenDesignFile[], onDown
   }
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <>
       <motion.button
+        ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
         className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm"
         style={{
@@ -81,48 +119,82 @@ function FileDropdown({ files, onDownload }: { files: ScreenDesignFile[], onDown
         <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </motion.button>
 
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.15 }}
-            className="absolute z-50 mt-2 w-72 rounded-xl overflow-hidden"
-            style={{
-              background: 'var(--bg-secondary)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)',
-            }}
-          >
-            <div className="p-2 space-y-1 max-h-60 overflow-y-auto">
-              {files.map((file) => (
-                <motion.button
-                  key={file.id}
-                  onClick={() => {
-                    onDownload(file.file_url, file.file_name)
-                    setIsOpen(false)
-                  }}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors"
-                  style={{ color: 'var(--text-primary)' }}
-                  whileHover={{ background: 'rgba(0, 245, 255, 0.1)' }}
-                >
-                  <Download className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--neon-green)' }} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm truncate">{file.file_name}</p>
-                    {file.file_size && (
-                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                        {formatFileSize(file.file_size)}
-                      </p>
-                    )}
-                  </div>
-                </motion.button>
-              ))}
-            </div>
-          </motion.div>
+      {typeof window !== 'undefined' &&
+        createPortal(
+          <AnimatePresence>
+            {isOpen && (
+              <motion.div
+                ref={dropdownRef}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.15 }}
+                className="fixed z-[9999] min-w-96 max-w-md rounded-xl overflow-hidden"
+                style={{
+                  top: `${position.top}px`,
+                  left: `${position.left}px`,
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)',
+                }}
+              >
+                <div className="p-2 space-y-1 max-h-60 overflow-y-auto">
+                  {files.map((file) => (
+                    <div
+                      key={file.id}
+                      className="flex items-center gap-2 group"
+                    >
+                      <motion.button
+                        onClick={() => {
+                          onDownload(file.file_url, file.file_name)
+                          setIsOpen(false)
+                        }}
+                        className="flex-1 flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors"
+                        style={{ color: 'var(--text-primary)' }}
+                        whileHover={{ background: 'rgba(0, 245, 255, 0.1)' }}
+                      >
+                        <Download className="w-4 h-4 shrink-0" style={{ color: 'var(--neon-green)' }} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm break-words">{file.file_name}</p>
+                          {file.file_size && (
+                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                              {formatFileSize(file.file_size)}
+                            </p>
+                          )}
+                        </div>
+                      </motion.button>
+                      {onDelete && (
+                        <motion.button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            if (confirm(`'${file.file_name}' 파일을 삭제하시겠습니까?`)) {
+                              onDelete(file.id, file.file_name)
+                            }
+                          }}
+                          className="p-2 rounded-lg transition-colors flex-shrink-0"
+                          style={{
+                            background: 'rgba(236, 72, 153, 0.1)',
+                            color: 'var(--neon-pink)',
+                          }}
+                          whileHover={{
+                            background: 'rgba(236, 72, 153, 0.2)',
+                            scale: 1.1,
+                          }}
+                          whileTap={{ scale: 0.95 }}
+                          title="파일 삭제"
+                        >
+                          <X className="w-4 h-4" />
+                        </motion.button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body
         )}
-      </AnimatePresence>
-    </div>
+    </>
   )
 }
 
@@ -132,11 +204,10 @@ export function ScreenDesignsClient({ initialDesigns }: ScreenDesignsClientProps
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString)
-    return date.toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    }).replace(/\. /g, '.').replace('.', '')
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}.${month}.${day}`
   }
 
   const handleUploadSuccess = () => {
@@ -171,6 +242,15 @@ export function ScreenDesignsClient({ initialDesigns }: ScreenDesignsClientProps
       router.refresh()
     } catch (err) {
       alert(err instanceof Error ? err.message : '삭제 중 오류가 발생했습니다')
+    }
+  }
+
+  const handleDeleteFile = async (fileId: number, fileName: string) => {
+    try {
+      await deleteScreenDesignFile(fileId)
+      router.refresh()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : '파일 삭제 중 오류가 발생했습니다')
     }
   }
 
@@ -319,7 +399,7 @@ export function ScreenDesignsClient({ initialDesigns }: ScreenDesignsClientProps
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <FileDropdown files={post.files} onDownload={handleDownload} />
+                      <FileDropdown files={post.files} onDownload={handleDownload} onDelete={handleDeleteFile} />
                     </td>
                     <td className="px-6 py-4">
                       <span className="font-mono text-sm" style={{ color: 'var(--text-secondary)' }}>
@@ -414,7 +494,7 @@ export function ScreenDesignsClient({ initialDesigns }: ScreenDesignsClientProps
 
                   {/* File download section */}
                   <div className="mb-3 ml-11">
-                    <FileDropdown files={post.files} onDownload={handleDownload} />
+                    <FileDropdown files={post.files} onDownload={handleDownload} onDelete={handleDeleteFile} />
                   </div>
 
                   <div className="flex items-center gap-4 text-sm ml-11" style={{ color: 'var(--text-muted)' }}>
