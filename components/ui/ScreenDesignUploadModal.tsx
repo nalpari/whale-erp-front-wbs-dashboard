@@ -2,8 +2,8 @@
 
 import { useState, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Upload, User, Loader2, FileIcon, AlertCircle } from 'lucide-react'
-import { uploadScreenDesign } from '@/lib/supabase'
+import { X, Upload, User, Loader2, FileIcon, AlertCircle, Plus, Trash2, FileText, AlignLeft } from 'lucide-react'
+import { createScreenDesignPost } from '@/lib/supabase'
 
 interface ScreenDesignUploadModalProps {
   isOpen: boolean
@@ -16,23 +16,60 @@ export function ScreenDesignUploadModal({
   onClose,
   onSuccess,
 }: ScreenDesignUploadModalProps) {
-  const [file, setFile] = useState<File | null>(null)
+  const [title, setTitle] = useState('')
+  const [content, setContent] = useState('')
+  const [files, setFiles] = useState<File[]>([])
   const [author, setAuthor] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleFileSelect = (selectedFile: File | null) => {
-    if (selectedFile) {
-      setFile(selectedFile)
+  const validateFile = useCallback((file: File): string | null => {
+    const allowedExtensions = ['.ppt', '.pptx']
+    const fileExtension = file.name.toLowerCase().slice(file.name.lastIndexOf('.'))
+    if (!allowedExtensions.includes(fileExtension)) {
+      return `${file.name}: PPT 또는 PPTX 파일만 업로드 가능합니다`
+    }
+    const maxSize = 50 * 1024 * 1024
+    if (file.size > maxSize) {
+      return `${file.name}: 파일 크기는 50MB 이하여야 합니다`
+    }
+    return null
+  }, [])
+
+  const handleFilesSelect = useCallback((selectedFiles: File[]) => {
+    const newFiles: File[] = []
+    for (const file of selectedFiles) {
+      const validationError = validateFile(file)
+      if (validationError) {
+        setError(validationError)
+        return
+      }
+      // 중복 파일 체크
+      if (!files.some(f => f.name === file.name && f.size === file.size)) {
+        newFiles.push(file)
+      }
+    }
+    if (newFiles.length > 0) {
+      setFiles(prev => [...prev, ...newFiles])
       setError(null)
     }
+  }, [files, validateFile])
+
+  const handleRemoveFile = (index: number) => {
+    setFiles(prev => prev.filter((_, i) => i !== index))
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0] || null
-    handleFileSelect(selectedFile)
+    const selectedFiles = Array.from(e.target.files || [])
+    if (selectedFiles.length > 0) {
+      handleFilesSelect(selectedFiles)
+    }
+    // Reset input value so same file can be selected again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
   }
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -52,35 +89,24 @@ export function ScreenDesignUploadModal({
     e.stopPropagation()
     setIsDragging(false)
 
-    const droppedFile = e.dataTransfer.files[0]
-    if (droppedFile) {
-      handleFileSelect(droppedFile)
+    const droppedFiles = Array.from(e.dataTransfer.files)
+    if (droppedFiles.length > 0) {
+      handleFilesSelect(droppedFiles)
     }
-  }, [])
+  }, [handleFilesSelect])
 
   const handleSubmit = async () => {
     // Validation
-    if (!file) {
+    if (!title.trim()) {
+      setError('제목을 입력해주세요')
+      return
+    }
+    if (files.length === 0) {
       setError('파일을 선택해주세요')
       return
     }
     if (!author.trim()) {
-      setError('작성자 이름을 입력해주세요')
-      return
-    }
-
-    // File extension validation
-    const allowedExtensions = ['.ppt', '.pptx']
-    const fileExtension = file.name.toLowerCase().slice(file.name.lastIndexOf('.'))
-    if (!allowedExtensions.includes(fileExtension)) {
-      setError('PPT 또는 PPTX 파일만 업로드 가능합니다')
-      return
-    }
-
-    // File size limit (50MB)
-    const maxSize = 50 * 1024 * 1024
-    if (file.size > maxSize) {
-      setError('파일 크기는 50MB 이하여야 합니다')
+      setError('등록자 이름을 입력해주세요')
       return
     }
 
@@ -88,13 +114,17 @@ export function ScreenDesignUploadModal({
     setError(null)
 
     try {
-      await uploadScreenDesign({
-        file,
+      await createScreenDesignPost({
+        title: title.trim(),
+        content: content.trim() || null,
         author: author.trim(),
+        files,
       })
 
       // Reset form on success
-      setFile(null)
+      setTitle('')
+      setContent('')
+      setFiles([])
       setAuthor('')
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
@@ -117,7 +147,9 @@ export function ScreenDesignUploadModal({
 
   const handleClose = () => {
     if (!isLoading) {
-      setFile(null)
+      setTitle('')
+      setContent('')
+      setFiles([])
       setAuthor('')
       setError(null)
       onClose()
@@ -191,15 +223,58 @@ export function ScreenDesignUploadModal({
             </div>
 
             {/* Content */}
-            <div className="p-6 space-y-5">
+            <div className="p-6 space-y-5 max-h-[60vh] overflow-y-auto">
+              {/* Title Input */}
+              <div className="space-y-2">
+                <label
+                  className="flex items-center gap-2 text-sm font-medium"
+                  style={{ color: 'var(--text-secondary)' }}
+                >
+                  <FileText className="w-4 h-4" style={{ color }} />
+                  제목 <span style={{ color: 'var(--neon-pink)' }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl outline-none transition-all focus:ring-2"
+                  style={{ ...inputStyle, '--tw-ring-color': color } as React.CSSProperties}
+                  placeholder="제목을 입력하세요"
+                  disabled={isLoading}
+                />
+              </div>
+
+              {/* Content Input */}
+              <div className="space-y-2">
+                <label
+                  className="flex items-center gap-2 text-sm font-medium"
+                  style={{ color: 'var(--text-secondary)' }}
+                >
+                  <AlignLeft className="w-4 h-4" style={{ color: 'var(--neon-purple)' }} />
+                  내용
+                </label>
+                <textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  rows={3}
+                  className="w-full px-4 py-3 rounded-xl outline-none transition-all focus:ring-2 resize-none"
+                  style={{ ...inputStyle, '--tw-ring-color': 'var(--neon-purple)' } as React.CSSProperties}
+                  placeholder="내용을 입력하세요 (선택)"
+                  disabled={isLoading}
+                />
+              </div>
+
               {/* File Upload Area */}
               <div className="space-y-2">
                 <label
                   className="flex items-center gap-2 text-sm font-medium"
                   style={{ color: 'var(--text-secondary)' }}
                 >
-                  <Upload className="w-4 h-4" style={{ color }} />
+                  <Upload className="w-4 h-4" style={{ color: 'var(--neon-green)' }} />
                   파일 선택 <span style={{ color: 'var(--neon-pink)' }}>*</span>
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                    (여러 파일 선택 가능)
+                  </span>
                 </label>
 
                 <div
@@ -207,7 +282,7 @@ export function ScreenDesignUploadModal({
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
-                  className="relative cursor-pointer rounded-xl p-6 text-center transition-all"
+                  className="relative cursor-pointer rounded-xl p-4 text-center transition-all"
                   style={{
                     background: isDragging ? 'rgba(0, 245, 255, 0.15)' : 'rgba(255, 255, 255, 0.03)',
                     border: isDragging
@@ -221,38 +296,64 @@ export function ScreenDesignUploadModal({
                     onChange={handleInputChange}
                     className="hidden"
                     accept=".ppt,.pptx"
+                    multiple
                   />
-
-                  {file ? (
-                    <div className="flex items-center justify-center gap-3">
-                      <FileIcon className="w-8 h-8" style={{ color }} />
-                      <div className="text-left">
-                        <p
-                          className="font-medium truncate max-w-[200px]"
-                          style={{ color: 'var(--text-primary)' }}
-                        >
-                          {file.name}
-                        </p>
-                        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                          {formatFileSize(file.size)}
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <Upload
-                        className="w-10 h-10 mx-auto mb-3"
-                        style={{ color: 'var(--text-muted)' }}
-                      />
-                      <p style={{ color: 'var(--text-secondary)' }}>
-                        클릭하거나 파일을 드래그하세요
-                      </p>
-                      <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-                        PPT, PPTX 파일 (최대 50MB)
-                      </p>
-                    </>
-                  )}
+                  <div className="flex items-center justify-center gap-2">
+                    <Plus className="w-5 h-5" style={{ color: 'var(--text-muted)' }} />
+                    <span style={{ color: 'var(--text-secondary)' }}>
+                      클릭하거나 파일을 드래그하세요
+                    </span>
+                  </div>
+                  <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                    PPT, PPTX 파일 (최대 50MB)
+                  </p>
                 </div>
+
+                {/* File List */}
+                {files.length > 0 && (
+                  <div className="space-y-2 mt-3">
+                    {files.map((file, index) => (
+                      <div
+                        key={`${file.name}-${index}`}
+                        className="flex items-center justify-between p-3 rounded-lg"
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.03)',
+                          border: '1px solid rgba(255, 255, 255, 0.1)',
+                        }}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <FileIcon className="w-5 h-5 shrink-0" style={{ color: 'var(--neon-green)' }} />
+                          <div className="min-w-0">
+                            <p
+                              className="font-medium truncate text-sm"
+                              style={{ color: 'var(--text-primary)' }}
+                            >
+                              {file.name}
+                            </p>
+                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                              {formatFileSize(file.size)}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleRemoveFile(index)
+                          }}
+                          className="p-1.5 rounded-lg transition-all hover:scale-110"
+                          style={{
+                            background: 'rgba(255, 0, 100, 0.1)',
+                            color: 'var(--neon-pink)',
+                          }}
+                          disabled={isLoading}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Author Input */}
@@ -261,16 +362,16 @@ export function ScreenDesignUploadModal({
                   className="flex items-center gap-2 text-sm font-medium"
                   style={{ color: 'var(--text-secondary)' }}
                 >
-                  <User className="w-4 h-4" style={{ color: 'var(--neon-green)' }} />
-                  작성자 <span style={{ color: 'var(--neon-pink)' }}>*</span>
+                  <User className="w-4 h-4" style={{ color: 'var(--neon-orange)' }} />
+                  등록자 <span style={{ color: 'var(--neon-pink)' }}>*</span>
                 </label>
                 <input
                   type="text"
                   value={author}
                   onChange={(e) => setAuthor(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl outline-none transition-all focus:ring-2"
-                  style={{ ...inputStyle, '--tw-ring-color': color } as React.CSSProperties}
-                  placeholder="작성자 이름을 입력하세요"
+                  style={{ ...inputStyle, '--tw-ring-color': 'var(--neon-orange)' } as React.CSSProperties}
+                  placeholder="등록자 이름을 입력하세요"
                   disabled={isLoading}
                 />
               </div>

@@ -1,11 +1,11 @@
-import { getScreenDesigns } from '@/lib/supabase'
+import { getScreenDesignPosts } from '@/lib/supabase'
 import { Header } from '@/components/layout/Header'
 import { ScreenDesignsClient } from '@/components/screen-designs/ScreenDesignsClient'
 
 export const revalidate = 60 // Revalidate every 60 seconds
 
 export default async function ScreenDesignsPage() {
-  const designs = await getScreenDesigns()
+  const posts = await getScreenDesignPosts()
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
@@ -15,7 +15,7 @@ export default async function ScreenDesignsPage() {
       />
 
       <main className="max-w-[1600px] mx-auto px-6 py-8">
-        <ScreenDesignsClient initialDesigns={designs} />
+        <ScreenDesignsClient initialDesigns={posts} />
       </main>
 
       {/* Footer */}
