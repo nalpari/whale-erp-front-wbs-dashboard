@@ -1,12 +1,23 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { LayoutDashboard, Activity, Plus, FileText } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { TaskCreateModal } from '@/components/ui/TaskCreateModal'
+
+type ReloadInterval = 'off' | '1min' | '3min' | '5min'
+
+const reloadConfig: Record<ReloadInterval, { label: string; color: string; glow: string; ms: number }> = {
+  '1min': { label: '1분', color: 'var(--neon-green)', glow: 'rgba(0, 255, 136, 0.4)', ms: 60000 },
+  '3min': { label: '3분', color: 'var(--neon-cyan)', glow: 'rgba(0, 245, 255, 0.4)', ms: 180000 },
+  '5min': { label: '5분', color: 'var(--neon-orange)', glow: 'rgba(255, 165, 0, 0.4)', ms: 300000 },
+  'off': { label: 'OFF', color: 'var(--text-muted)', glow: 'transparent', ms: 0 },
+}
+
+const reloadOrder: ReloadInterval[] = ['1min', '3min', '5min', 'off']
 
 interface HeaderProps {
   title?: string
@@ -15,8 +26,31 @@ interface HeaderProps {
 
 export function Header({ title = 'WBS Dashboard', subtitle }: HeaderProps) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [reloadInterval, setReloadInterval] = useState<ReloadInterval>('off')
   const router = useRouter()
   const pathname = usePathname()
+
+  const handleReload = useCallback(() => {
+    router.refresh()
+  }, [router])
+
+  // 자동 새로고침 로직
+  useEffect(() => {
+    const config = reloadConfig[reloadInterval]
+    if (config.ms === 0) return
+
+    const intervalId = setInterval(() => {
+      handleReload()
+    }, config.ms)
+
+    return () => clearInterval(intervalId)
+  }, [reloadInterval, handleReload])
+
+  const toggleReload = () => {
+    const currentIndex = reloadOrder.indexOf(reloadInterval)
+    const nextIndex = (currentIndex + 1) % reloadOrder.length
+    setReloadInterval(reloadOrder[nextIndex])
+  }
 
   const now = new Date()
   const dateStr = now.toLocaleDateString('ko-KR', {
@@ -120,18 +154,27 @@ export function Header({ title = 'WBS Dashboard', subtitle }: HeaderProps) {
 
           {/* Right section */}
           <div className="flex items-center gap-6">
-            {/* Live indicator */}
-            <div className="hidden md:flex items-center gap-2">
+            {/* Reload Toggle Button */}
+            <motion.button
+              onClick={toggleReload}
+              className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg font-mono text-sm"
+              style={{
+                background: 'var(--bg-glass)',
+                border: `1px solid ${reloadConfig[reloadInterval].color}`,
+                color: reloadConfig[reloadInterval].color,
+                boxShadow: `0 0 15px ${reloadConfig[reloadInterval].glow}`,
+              }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
               <motion.div
-                className="w-2 h-2 rounded-full"
-                style={{ background: 'var(--neon-green)' }}
-                animate={{ scale: [1, 1.2, 1], opacity: [1, 0.7, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-              <span className="text-sm font-mono" style={{ color: 'var(--text-secondary)' }}>
-                LIVE
-              </span>
-            </div>
+                animate={reloadInterval !== 'off' ? { rotate: 360 } : {}}
+                transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+              >
+                <RefreshCw className="w-4 h-4" />
+              </motion.div>
+              <span>{reloadConfig[reloadInterval].label}</span>
+            </motion.button>
 
             {/* Date */}
             <div className="hidden lg:block text-right">

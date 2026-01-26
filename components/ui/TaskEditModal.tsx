@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Calendar, CalendarDays, Percent, Loader2, Flag } from 'lucide-react'
+import { X, Calendar, CalendarDays, Percent, Loader2, Flag, LayoutGrid } from 'lucide-react'
 import { Task, TaskStatus, TASK_STATUS_LIST } from '@/lib/supabase'
 
 interface AnchorRect {
@@ -16,7 +16,7 @@ interface TaskEditModalProps {
   task: Task | null
   isOpen: boolean
   onClose: () => void
-  onSave: (taskId: number, progress: number, status: TaskStatus, startDate: string | null, dueDate: string | null) => Promise<void>
+  onSave: (taskId: number, progress: number, status: TaskStatus, startDate: string | null, dueDate: string | null, menuName: string | null) => Promise<void>
   color?: string
   anchorRect?: AnchorRect | null
 }
@@ -26,6 +26,7 @@ export function TaskEditModal({ task, isOpen, onClose, onSave, color = 'var(--ne
   const [status, setStatus] = useState<TaskStatus>('대기중')
   const [startDate, setStartDate] = useState('')
   const [dueDate, setDueDate] = useState('')
+  const [menuName, setMenuName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -35,6 +36,7 @@ export function TaskEditModal({ task, isOpen, onClose, onSave, color = 'var(--ne
       setStatus(task.status)
       setStartDate(task.start_date ? task.start_date.split('T')[0] : '')
       setDueDate(task.due_date ? task.due_date.split('T')[0] : '')
+      setMenuName(task.menu_name || '')
       setError(null)
     }
   }, [task])
@@ -46,7 +48,7 @@ export function TaskEditModal({ task, isOpen, onClose, onSave, color = 'var(--ne
     setError(null)
 
     try {
-      await onSave(task.id, progress, status, startDate || null, dueDate || null)
+      await onSave(task.id, progress, status, startDate || null, dueDate || null, menuName || null)
       onClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : '저장 중 오류가 발생했습니다')
@@ -197,6 +199,26 @@ export function TaskEditModal({ task, isOpen, onClose, onSave, color = 'var(--ne
                     </option>
                   ))}
                 </select>
+              </div>
+
+              {/* Menu Name Input */}
+              <div className="space-y-3">
+                <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                  <LayoutGrid className="w-4 h-4" style={{ color: 'var(--neon-cyan)' }} />
+                  메뉴명
+                </label>
+                <input
+                  type="text"
+                  value={menuName}
+                  onChange={(e) => setMenuName(e.target.value)}
+                  placeholder="메뉴명을 입력하세요"
+                  className="w-full px-4 py-3 rounded-xl outline-none transition-all"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    color: 'var(--text-primary)',
+                  }}
+                />
               </div>
 
               {/* Date Inputs */}
