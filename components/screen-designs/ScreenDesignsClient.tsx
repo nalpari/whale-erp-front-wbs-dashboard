@@ -1,15 +1,129 @@
 'use client'
 
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { Download, Upload, FileText, Calendar, User, Trash2 } from 'lucide-react'
-import { ScreenDesign, deleteScreenDesign } from '@/lib/supabase'
+import { useState, useRef, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Download, Upload, FileText, Calendar, User, Trash2, ChevronDown, Paperclip } from 'lucide-react'
+import { ScreenDesignPostWithFiles, ScreenDesignFile, deleteScreenDesignPost } from '@/lib/supabase'
 import { GlowCard } from '@/components/ui/GlowCard'
 import { ScreenDesignUploadModal } from '@/components/ui/ScreenDesignUploadModal'
 import { useRouter } from 'next/navigation'
 
 interface ScreenDesignsClientProps {
-  initialDesigns: ScreenDesign[]
+  initialDesigns: ScreenDesignPostWithFiles[]
+}
+
+// File dropdown component for multiple files
+function FileDropdown({ files, onDownload }: { files: ScreenDesignFile[], onDownload: (url: string, fileName: string) => void }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const formatFileSize = (bytes: number | null): string => {
+    if (!bytes) return ''
+    if (bytes < 1024) return `${bytes}B`
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`
+    return `${(bytes / (1024 * 1024)).toFixed(1)}MB`
+  }
+
+  if (files.length === 0) {
+    return (
+      <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
+        첨부파일 없음
+      </span>
+    )
+  }
+
+  if (files.length === 1) {
+    const file = files[0]
+    return (
+      <motion.button
+        onClick={() => onDownload(file.file_url, file.file_name)}
+        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm"
+        style={{
+          background: 'rgba(16, 185, 129, 0.1)',
+          border: '1px solid rgba(16, 185, 129, 0.3)',
+          color: 'var(--neon-green)',
+        }}
+        whileHover={{ scale: 1.02, background: 'rgba(16, 185, 129, 0.2)' }}
+        whileTap={{ scale: 0.98 }}
+        title={file.file_name}
+      >
+        <Download className="w-4 h-4" />
+        <span className="truncate max-w-[150px]">{file.file_name}</span>
+      </motion.button>
+    )
+  }
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <motion.button
+        onClick={() => setIsOpen(!isOpen)}
+        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm"
+        style={{
+          background: 'rgba(0, 245, 255, 0.1)',
+          border: '1px solid rgba(0, 245, 255, 0.3)',
+          color: 'var(--neon-cyan)',
+        }}
+        whileHover={{ scale: 1.02, background: 'rgba(0, 245, 255, 0.2)' }}
+        whileTap={{ scale: 0.98 }}
+      >
+        <Paperclip className="w-4 h-4" />
+        <span>{files.length}개 파일</span>
+        <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </motion.button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.15 }}
+            className="absolute z-50 mt-2 w-72 rounded-xl overflow-hidden"
+            style={{
+              background: 'var(--bg-secondary)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)',
+            }}
+          >
+            <div className="p-2 space-y-1 max-h-60 overflow-y-auto">
+              {files.map((file) => (
+                <motion.button
+                  key={file.id}
+                  onClick={() => {
+                    onDownload(file.file_url, file.file_name)
+                    setIsOpen(false)
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors"
+                  style={{ color: 'var(--text-primary)' }}
+                  whileHover={{ background: 'rgba(0, 245, 255, 0.1)' }}
+                >
+                  <Download className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--neon-green)' }} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm truncate">{file.file_name}</p>
+                    {file.file_size && (
+                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                        {formatFileSize(file.file_size)}
+                      </p>
+                    )}
+                  </div>
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
 }
 
 export function ScreenDesignsClient({ initialDesigns }: ScreenDesignsClientProps) {
@@ -47,13 +161,13 @@ export function ScreenDesignsClient({ initialDesigns }: ScreenDesignsClientProps
     }
   }
 
-  const handleDelete = async (id: number, documentName: string) => {
-    if (!confirm(`'${documentName}' 문서를 삭제하시겠습니까?`)) {
+  const handleDelete = async (id: number, title: string) => {
+    if (!confirm(`'${title}' 게시물을 삭제하시겠습니까?\n첨부된 모든 파일도 함께 삭제됩니다.`)) {
       return
     }
 
     try {
-      await deleteScreenDesign(id)
+      await deleteScreenDesignPost(id)
       router.refresh()
     } catch (err) {
       alert(err instanceof Error ? err.message : '삭제 중 오류가 발생했습니다')
@@ -144,23 +258,26 @@ export function ScreenDesignsClient({ initialDesigns }: ScreenDesignsClientProps
                     번호
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
-                    문서명
+                    제목
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: 'var(--text-secondary)', width: '140px' }}>
-                    업데이트 날짜
+                  <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: 'var(--text-secondary)', width: '200px' }}>
+                    첨부파일
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: 'var(--text-secondary)', width: '120px' }}>
-                    작성자
+                    등록일
                   </th>
-                  <th className="px-6 py-4 text-center text-sm font-semibold" style={{ color: 'var(--text-secondary)', width: '120px' }}>
+                  <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: 'var(--text-secondary)', width: '100px' }}>
+                    등록자
+                  </th>
+                  <th className="px-6 py-4 text-center text-sm font-semibold" style={{ color: 'var(--text-secondary)', width: '80px' }}>
                     관리
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {initialDesigns.map((design, index) => (
+                {initialDesigns.map((post, index) => (
                   <motion.tr
-                    key={design.id}
+                    key={post.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
@@ -187,45 +304,37 @@ export function ScreenDesignsClient({ initialDesigns }: ScreenDesignsClientProps
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <FileText className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--neon-purple)' }} />
-                        <span className="font-medium truncate" style={{ color: 'var(--text-primary)' }}>
-                          {design.document_name}
-                        </span>
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2">
+                          <FileText className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--neon-purple)' }} />
+                          <span className="font-medium truncate" style={{ color: 'var(--text-primary)' }}>
+                            {post.title}
+                          </span>
+                        </div>
+                        {post.content && (
+                          <p className="text-sm truncate ml-7" style={{ color: 'var(--text-muted)' }}>
+                            {post.content}
+                          </p>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4">
+                      <FileDropdown files={post.files} onDownload={handleDownload} />
+                    </td>
+                    <td className="px-6 py-4">
                       <span className="font-mono text-sm" style={{ color: 'var(--text-secondary)' }}>
-                        {formatDate(design.updated_at)}
+                        {formatDate(post.created_at)}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                        {design.author}
+                        {post.author}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center justify-center gap-2">
+                      <div className="flex items-center justify-center">
                         <motion.button
-                          onClick={() => handleDownload(design.file_url, design.file_name)}
-                          className="inline-flex items-center justify-center w-10 h-10 rounded-lg transition-all"
-                          style={{
-                            background: 'rgba(16, 185, 129, 0.1)',
-                            border: '1px solid rgba(16, 185, 129, 0.3)',
-                            color: 'var(--neon-green)',
-                          }}
-                          whileHover={{
-                            scale: 1.1,
-                            background: 'rgba(16, 185, 129, 0.2)',
-                            boxShadow: '0 0 15px rgba(16, 185, 129, 0.3)',
-                          }}
-                          whileTap={{ scale: 0.95 }}
-                          title="다운로드"
-                        >
-                          <Download className="w-5 h-5" />
-                        </motion.button>
-                        <motion.button
-                          onClick={() => handleDelete(design.id, design.document_name)}
+                          onClick={() => handleDelete(post.id, post.title)}
                           className="inline-flex items-center justify-center w-10 h-10 rounded-lg transition-all"
                           style={{
                             background: 'rgba(236, 72, 153, 0.1)',
@@ -251,9 +360,9 @@ export function ScreenDesignsClient({ initialDesigns }: ScreenDesignsClientProps
 
             {/* Mobile Cards */}
             <div className="md:hidden p-4 space-y-4">
-              {initialDesigns.map((design, index) => (
+              {initialDesigns.map((post, index) => (
                 <motion.div
-                  key={design.id}
+                  key={post.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
@@ -274,51 +383,48 @@ export function ScreenDesignsClient({ initialDesigns }: ScreenDesignsClientProps
                       >
                         {initialDesigns.length - index}
                       </span>
-                      <div className="flex items-center gap-2 min-w-0">
-                        <FileText className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--neon-purple)' }} />
-                        <span className="font-medium truncate" style={{ color: 'var(--text-primary)' }}>
-                          {design.document_name}
-                        </span>
+                      <div className="flex flex-col min-w-0">
+                        <div className="flex items-center gap-2">
+                          <FileText className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--neon-purple)' }} />
+                          <span className="font-medium truncate" style={{ color: 'var(--text-primary)' }}>
+                            {post.title}
+                          </span>
+                        </div>
+                        {post.content && (
+                          <p className="text-sm truncate ml-7 mt-1" style={{ color: 'var(--text-muted)' }}>
+                            {post.content}
+                          </p>
+                        )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <motion.button
-                        onClick={() => handleDownload(design.file_url, design.file_name)}
-                        className="inline-flex items-center justify-center w-10 h-10 rounded-lg"
-                        style={{
-                          background: 'rgba(16, 185, 129, 0.1)',
-                          border: '1px solid rgba(16, 185, 129, 0.3)',
-                          color: 'var(--neon-green)',
-                        }}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <Download className="w-5 h-5" />
-                      </motion.button>
-                      <motion.button
-                        onClick={() => handleDelete(design.id, design.document_name)}
-                        className="inline-flex items-center justify-center w-10 h-10 rounded-lg"
-                        style={{
-                          background: 'rgba(236, 72, 153, 0.1)',
-                          border: '1px solid rgba(236, 72, 153, 0.3)',
-                          color: 'var(--neon-pink)',
-                        }}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </motion.button>
-                    </div>
+                    <motion.button
+                      onClick={() => handleDelete(post.id, post.title)}
+                      className="inline-flex items-center justify-center w-10 h-10 rounded-lg flex-shrink-0"
+                      style={{
+                        background: 'rgba(236, 72, 153, 0.1)',
+                        border: '1px solid rgba(236, 72, 153, 0.3)',
+                        color: 'var(--neon-pink)',
+                      }}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </motion.button>
                   </div>
 
-                  <div className="flex items-center gap-4 text-sm" style={{ color: 'var(--text-muted)' }}>
+                  {/* File download section */}
+                  <div className="mb-3 ml-11">
+                    <FileDropdown files={post.files} onDownload={handleDownload} />
+                  </div>
+
+                  <div className="flex items-center gap-4 text-sm ml-11" style={{ color: 'var(--text-muted)' }}>
                     <div className="flex items-center gap-1.5">
                       <Calendar className="w-4 h-4" />
-                      <span className="font-mono">{formatDate(design.updated_at)}</span>
+                      <span className="font-mono">{formatDate(post.created_at)}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <User className="w-4 h-4" />
-                      <span>{design.author}</span>
+                      <span>{post.author}</span>
                     </div>
                   </div>
                 </motion.div>
@@ -337,7 +443,7 @@ export function ScreenDesignsClient({ initialDesigns }: ScreenDesignsClientProps
           className="mt-4 text-sm text-center"
           style={{ color: 'var(--text-muted)' }}
         >
-          총 <span className="font-mono" style={{ color: 'var(--neon-cyan)' }}>{initialDesigns.length}</span>개의 문서
+          총 <span className="font-mono" style={{ color: 'var(--neon-cyan)' }}>{initialDesigns.length}</span>개의 게시물
         </motion.div>
       )}
 
