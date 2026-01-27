@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, ChevronDown, Calendar, CalendarDays, Folder, Loader2, Percent, Trash2, Flag, FileText, LayoutGrid, AlignLeft } from 'lucide-react'
 import { Task, TaskStatus, TASK_STATUS_LIST, getStatusColor, UpdateTaskInput } from '@/lib/supabase'
@@ -19,8 +19,23 @@ export function AssigneeTaskList({ tasks, color, onUpdateField, onDeleteTask }: 
   const [isDeletingId, setIsDeletingId] = useState<number | null>(null)
   const [updatingFields, setUpdatingFields] = useState<Record<string, boolean>>({})
   const [error, setError] = useState<string | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   const categories = [...new Set(tasks.map(t => t.category))]
+
+  // 외부 클릭 시 확장 영역 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (expandedTask !== null && containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setExpandedTask(null)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [expandedTask])
 
   const filteredTasks = tasks.filter(task => {
     const matchesSearch = task.task_title.toLowerCase().includes(search.toLowerCase()) ||
@@ -80,7 +95,7 @@ export function AssigneeTaskList({ tasks, color, onUpdateField, onDeleteTask }: 
   const isFieldUpdating = (taskId: number, field: string) => updatingFields[`${taskId}-${field}`]
 
   return (
-    <div className="space-y-4">
+    <div ref={containerRef} className="space-y-4">
       {/* Filters */}
       <div className="flex flex-col md:flex-row gap-4">
         {/* Search */}
@@ -327,7 +342,12 @@ export function AssigneeTaskList({ tasks, color, onUpdateField, onDeleteTask }: 
                                 defaultValue={task.progress}
                                 onPointerUp={(e) => {
                                   const newProgress = Number((e.target as HTMLInputElement).value)
-                                  if (task.status === '대기중' && newProgress > 0) {
+                                  // 진행률에 따라 상태 자동 변경: 0=진행중, 100=완료
+                                  if (newProgress === 0 && task.status !== '진행중') {
+                                    onUpdateField?.(task.id, { progress: newProgress, status: '진행중' })
+                                  } else if (newProgress === 100 && task.status !== '완료') {
+                                    onUpdateField?.(task.id, { progress: newProgress, status: '완료' })
+                                  } else if (task.status === '대기중' && newProgress > 0) {
                                     onUpdateField?.(task.id, { progress: newProgress, status: '진행중' })
                                   } else {
                                     handleFieldUpdate(task.id, 'progress', newProgress)
