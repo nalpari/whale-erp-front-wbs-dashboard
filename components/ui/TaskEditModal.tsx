@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useMemo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { AnimatePresence } from 'framer-motion'
 import { X, Calendar, CalendarDays, Percent, Loader2, Flag, LayoutGrid } from 'lucide-react'
 import { Task, TaskStatus, TASK_STATUS_LIST } from '@/lib/supabase'
 
@@ -17,11 +17,12 @@ interface TaskEditModalProps {
   isOpen: boolean
   onClose: () => void
   onSave: (taskId: number, progress: number, status: TaskStatus, startDate: string | null, dueDate: string | null, menuName: string | null) => Promise<void>
+  /** @deprecated color prop is no longer used */
   color?: string
   anchorRect?: AnchorRect | null
 }
 
-export function TaskEditModal({ task, isOpen, onClose, onSave, color = 'var(--neon-cyan)', anchorRect }: TaskEditModalProps) {
+export function TaskEditModal({ task, isOpen, onClose, onSave, anchorRect }: TaskEditModalProps) {
   const [progress, setProgress] = useState(0)
   const [status, setStatus] = useState<TaskStatus>('대기중')
   const [startDate, setStartDate] = useState('')
@@ -85,29 +86,27 @@ export function TaskEditModal({ task, isOpen, onClose, onSave, color = 'var(--ne
     return { top, left }
   }, [anchorRect])
 
+  const inputStyle = {
+    background: 'var(--bg-tertiary)',
+    border: '1px solid var(--border)',
+    color: 'var(--text-primary)',
+  }
+
   return (
     <AnimatePresence>
       {isOpen && task && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className={`fixed inset-0 z-50 ${!modalPosition ? 'flex items-center justify-center' : ''} p-4`}
-          style={{ background: 'rgba(0, 0, 0, 0.7)', backdropFilter: 'blur(8px)' }}
+        <div
+          className={`fixed inset-0 z-50 ${!modalPosition ? 'flex items-center justify-center' : ''} p-4 animate-fade-in`}
+          style={{ background: 'rgba(0, 0, 0, 0.5)', backdropFilter: 'blur(4px)' }}
           onClick={handleBackdropClick}
         >
-          <motion.div
+          <div
             ref={modalRef}
-            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            transition={{ duration: 0.3, type: 'spring', damping: 25 }}
-            className="w-full max-w-md rounded-2xl overflow-hidden"
+            className="w-full max-w-md rounded-xl overflow-hidden animate-slide-up"
             style={{
               background: 'var(--bg-card)',
-              border: `1px solid ${color}30`,
-              boxShadow: `0 0 60px ${color}20`,
+              border: '1px solid var(--border)',
+              boxShadow: '0 4px 24px rgba(0, 0, 0, 0.15)',
               ...(modalPosition && {
                 position: 'absolute',
                 top: modalPosition.top,
@@ -120,22 +119,21 @@ export function TaskEditModal({ task, isOpen, onClose, onSave, color = 'var(--ne
             <div
               className="p-6 relative"
               style={{
-                background: `linear-gradient(135deg, ${color}15, transparent)`,
-                borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                background: 'var(--bg-secondary)',
+                borderBottom: '1px solid var(--border)',
               }}
             >
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 p-2 rounded-lg transition-all hover:scale-110"
+                className="absolute top-4 right-4 p-2 rounded-lg transition-colors hover:bg-[var(--bg-tertiary)]"
                 style={{
-                  background: 'rgba(255, 255, 255, 0.05)',
                   color: 'var(--text-muted)',
                 }}
               >
                 <X className="w-5 h-5" />
               </button>
 
-              <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
+              <h2 className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>
                 태스크 수정
               </h2>
               <p className="text-sm mt-1 truncate pr-10" style={{ color: 'var(--text-muted)' }}>
@@ -148,7 +146,7 @@ export function TaskEditModal({ task, isOpen, onClose, onSave, color = 'var(--ne
               {/* Progress Input */}
               <div className="space-y-3">
                 <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-                  <Percent className="w-4 h-4" style={{ color }} />
+                  <Percent className="w-4 h-4" style={{ color: 'var(--accent)' }} />
                   진행률
                 </label>
                 <div className="flex items-center gap-4">
@@ -161,15 +159,15 @@ export function TaskEditModal({ task, isOpen, onClose, onSave, color = 'var(--ne
                     onChange={(e) => setProgress(Number(e.target.value))}
                     className="flex-1 h-2 rounded-full appearance-none cursor-pointer"
                     style={{
-                      background: `linear-gradient(to right, ${color} 0%, ${color} ${progress}%, rgba(255,255,255,0.1) ${progress}%, rgba(255,255,255,0.1) 100%)`,
+                      background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${progress}%, var(--bg-tertiary) ${progress}%, var(--bg-tertiary) 100%)`,
                     }}
                   />
                   <div
-                    className="w-16 text-center py-2 rounded-lg font-mono font-bold"
+                    className="w-16 text-center py-2 rounded-lg font-mono font-medium text-sm"
                     style={{
-                      background: `${color}15`,
-                      border: `1px solid ${color}30`,
-                      color,
+                      background: 'var(--bg-tertiary)',
+                      border: '1px solid var(--border)',
+                      color: 'var(--accent)',
                     }}
                   >
                     {progress}%
@@ -180,18 +178,14 @@ export function TaskEditModal({ task, isOpen, onClose, onSave, color = 'var(--ne
               {/* Status Select */}
               <div className="space-y-3">
                 <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-                  <Flag className="w-4 h-4" style={{ color: 'var(--neon-magenta)' }} />
+                  <Flag className="w-4 h-4" style={{ color: 'var(--info)' }} />
                   상태
                 </label>
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value as TaskStatus)}
-                  className="w-full px-4 py-3 rounded-xl outline-none transition-all cursor-pointer"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.03)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    color: 'var(--text-primary)',
-                  }}
+                  className="w-full px-4 py-3 rounded-lg outline-none transition-all cursor-pointer focus:ring-2 focus:ring-[var(--accent)]"
+                  style={inputStyle}
                 >
                   {TASK_STATUS_LIST.map((s) => (
                     <option key={s} value={s} style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
@@ -204,7 +198,7 @@ export function TaskEditModal({ task, isOpen, onClose, onSave, color = 'var(--ne
               {/* Menu Name Input */}
               <div className="space-y-3">
                 <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-                  <LayoutGrid className="w-4 h-4" style={{ color: 'var(--neon-cyan)' }} />
+                  <LayoutGrid className="w-4 h-4" style={{ color: 'var(--accent)' }} />
                   메뉴명
                 </label>
                 <input
@@ -212,12 +206,8 @@ export function TaskEditModal({ task, isOpen, onClose, onSave, color = 'var(--ne
                   value={menuName}
                   onChange={(e) => setMenuName(e.target.value)}
                   placeholder="메뉴명을 입력하세요"
-                  className="w-full px-4 py-3 rounded-xl outline-none transition-all"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.03)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    color: 'var(--text-primary)',
-                  }}
+                  className="w-full px-4 py-3 rounded-lg outline-none transition-all focus:ring-2 focus:ring-[var(--accent)]"
+                  style={inputStyle}
                 />
               </div>
 
@@ -226,38 +216,30 @@ export function TaskEditModal({ task, isOpen, onClose, onSave, color = 'var(--ne
                 {/* Start Date Input */}
                 <div className="space-y-3">
                   <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-                    <CalendarDays className="w-4 h-4" style={{ color }} />
+                    <CalendarDays className="w-4 h-4" style={{ color: 'var(--accent)' }} />
                     시작일
                   </label>
                   <input
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl outline-none transition-all"
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.03)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      color: 'var(--text-primary)',
-                    }}
+                    className="w-full px-4 py-3 rounded-lg outline-none transition-all focus:ring-2 focus:ring-[var(--accent)]"
+                    style={inputStyle}
                   />
                 </div>
 
                 {/* Due Date Input */}
                 <div className="space-y-3">
                   <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-                    <Calendar className="w-4 h-4" style={{ color: 'var(--neon-orange)' }} />
+                    <Calendar className="w-4 h-4" style={{ color: 'var(--warning)' }} />
                     마감일
                   </label>
                   <input
                     type="date"
                     value={dueDate}
                     onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl outline-none transition-all"
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.03)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      color: 'var(--text-primary)',
-                    }}
+                    className="w-full px-4 py-3 rounded-lg outline-none transition-all focus:ring-2 focus:ring-[var(--accent)]"
+                    style={inputStyle}
                   />
                 </div>
               </div>
@@ -267,9 +249,9 @@ export function TaskEditModal({ task, isOpen, onClose, onSave, color = 'var(--ne
                 <div
                   className="p-3 rounded-lg text-sm"
                   style={{
-                    background: 'rgba(255, 0, 100, 0.1)',
-                    border: '1px solid rgba(255, 0, 100, 0.3)',
-                    color: 'var(--neon-pink)',
+                    background: 'var(--error-bg)',
+                    border: '1px solid var(--error)',
+                    color: 'var(--error)',
                   }}
                 >
                   {error}
@@ -280,14 +262,14 @@ export function TaskEditModal({ task, isOpen, onClose, onSave, color = 'var(--ne
             {/* Footer */}
             <div
               className="p-6 flex gap-3"
-              style={{ borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}
+              style={{ borderTop: '1px solid var(--border)' }}
             >
               <button
                 onClick={onClose}
-                className="flex-1 px-4 py-3 rounded-xl font-medium transition-all hover:scale-[1.02]"
+                className="flex-1 px-4 py-3 rounded-lg font-medium transition-colors hover:bg-[var(--bg-tertiary)]"
                 style={{
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border)',
                   color: 'var(--text-secondary)',
                 }}
               >
@@ -296,11 +278,10 @@ export function TaskEditModal({ task, isOpen, onClose, onSave, color = 'var(--ne
               <button
                 onClick={handleSave}
                 disabled={isLoading}
-                className="flex-1 px-4 py-3 rounded-xl font-medium transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 style={{
-                  background: `linear-gradient(135deg, ${color}, ${color}80)`,
-                  color: 'var(--bg-primary)',
-                  boxShadow: `0 0 20px ${color}40`,
+                  background: 'var(--accent)',
+                  color: 'white',
                 }}
               >
                 {isLoading ? (
@@ -313,8 +294,8 @@ export function TaskEditModal({ task, isOpen, onClose, onSave, color = 'var(--ne
                 )}
               </button>
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       )}
     </AnimatePresence>
   )

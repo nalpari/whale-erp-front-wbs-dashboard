@@ -1,6 +1,5 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import {
   BarChart,
   Bar,
@@ -18,10 +17,14 @@ interface CategoryBarChartProps {
   className?: string
 }
 
-const COLORS = [
-  '#00f5ff', '#a855f7', '#ff00ff', '#ec4899',
-  '#3b82f6', '#10b981', '#f97316', '#eab308',
-  '#06b6d4', '#8b5cf6', '#f43f5e', '#84cc16',
+// Professional chart color palette using CSS variables
+const CHART_COLORS = [
+  'var(--chart-1)',
+  'var(--chart-2)',
+  'var(--chart-3)',
+  'var(--chart-4)',
+  'var(--chart-5)',
+  'var(--chart-6)',
 ]
 
 export function CategoryBarChart({ data, className = '' }: CategoryBarChartProps) {
@@ -35,88 +38,58 @@ export function CategoryBarChart({ data, className = '' }: CategoryBarChartProps
       completed: item.completed,
       pending: item.pending,
       progress: item.progress,
-      color: COLORS[index % COLORS.length],
+      color: CHART_COLORS[index % CHART_COLORS.length],
     }))
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      className={className}
-    >
+    <div className={`animate-fade-in ${className}`}>
       <ResponsiveContainer width="100%" height={400}>
         <BarChart
           data={chartData}
           layout="vertical"
           margin={{ top: 10, right: 30, left: 100, bottom: 10 }}
         >
-          <defs>
-            {chartData.map((entry, index) => (
-              <linearGradient
-                key={`bar-grad-${index}`}
-                id={`bar-grad-${index}`}
-                x1="0%"
-                y1="0%"
-                x2="100%"
-                y2="0%"
-              >
-                <stop offset="0%" stopColor={entry.color} stopOpacity={0.8} />
-                <stop offset="100%" stopColor={entry.color} stopOpacity={0.4} />
-              </linearGradient>
-            ))}
-            <filter id="bar-glow">
-              <feGaussianBlur stdDeviation="2" result="coloredBlur" />
-              <feMerge>
-                <feMergeNode in="coloredBlur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
-
           <CartesianGrid
             strokeDasharray="3 3"
             horizontal={false}
-            stroke="rgba(255, 255, 255, 0.05)"
+            stroke="var(--border)"
           />
 
           <XAxis
             type="number"
             tick={{ fill: 'var(--text-muted)', fontSize: 12 }}
-            axisLine={{ stroke: 'rgba(255, 255, 255, 0.1)' }}
+            axisLine={{ stroke: 'var(--border)' }}
           />
 
           <YAxis
             type="category"
             dataKey="name"
             tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
-            axisLine={{ stroke: 'rgba(255, 255, 255, 0.1)' }}
+            axisLine={{ stroke: 'var(--border)' }}
             width={90}
           />
 
           <Tooltip
-            cursor={{ fill: 'rgba(255, 255, 255, 0.02)' }}
+            cursor={{ fill: 'var(--bg-tertiary)', opacity: 0.5 }}
             content={({ active, payload }) => {
               if (active && payload && payload.length) {
                 const data = payload[0].payload
                 return (
                   <div
-                    className="p-4 rounded-xl"
+                    className="p-3 rounded-lg"
                     style={{
                       background: 'var(--bg-card)',
-                      border: `1px solid ${data.color}50`,
-                      backdropFilter: 'blur(20px)',
-                      boxShadow: `0 0 30px ${data.color}30`,
+                      border: '1px solid var(--border)',
                     }}
                   >
-                    <p className="font-bold mb-2" style={{ color: data.color }}>
+                    <p className="font-semibold mb-1" style={{ color: data.color }}>
                       {data.fullName}
                     </p>
-                    <div className="space-y-1 text-sm">
+                    <div className="space-y-0.5 text-sm">
                       <p style={{ color: 'var(--text-secondary)' }}>
-                        전체: <span className="font-mono font-bold">{data.total}개</span>
+                        전체: <span className="font-mono font-medium">{data.total}개</span>
                       </p>
-                      <p style={{ color: 'var(--neon-green)' }}>
+                      <p style={{ color: 'var(--success)' }}>
                         완료: <span className="font-mono">{data.completed}개</span>
                       </p>
                       <p style={{ color: 'var(--text-muted)' }}>
@@ -132,18 +105,18 @@ export function CategoryBarChart({ data, className = '' }: CategoryBarChartProps
 
           <Bar
             dataKey="total"
-            radius={[0, 8, 8, 0]}
-            filter="url(#bar-glow)"
+            radius={[0, 6, 6, 0]}
           >
             {chartData.map((entry, index) => (
               <Cell
                 key={`cell-${index}`}
-                fill={`url(#bar-grad-${index})`}
+                fill={entry.color}
+                opacity={0.85}
               />
             ))}
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-    </motion.div>
+    </div>
   )
 }

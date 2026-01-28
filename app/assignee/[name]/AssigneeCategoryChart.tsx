@@ -12,10 +12,11 @@ interface CategoryData {
 
 interface AssigneeCategoryChartProps {
   data: CategoryData[]
-  color: string
+  /** @deprecated No longer used - kept for backward compatibility */
+  color?: string
 }
 
-export function AssigneeCategoryChart({ data, color }: AssigneeCategoryChartProps) {
+export function AssigneeCategoryChart({ data }: AssigneeCategoryChartProps) {
   const maxTotal = Math.max(...data.map(d => d.total))
 
   return (
@@ -43,7 +44,7 @@ export function AssigneeCategoryChart({ data, color }: AssigneeCategoryChartProp
               <span
                 className="text-sm font-bold font-mono"
                 style={{
-                  color: item.progress === 100 ? 'var(--neon-green)' : color,
+                  color: item.progress === 100 ? 'var(--success)' : 'var(--accent)',
                 }}
               >
                 {item.progress}%
@@ -52,11 +53,11 @@ export function AssigneeCategoryChart({ data, color }: AssigneeCategoryChartProp
           </div>
 
           {/* Progress Bar */}
-          <div className="relative h-8 rounded-lg overflow-hidden" style={{ background: 'rgba(255, 255, 255, 0.03)' }}>
+          <div className="relative h-8 rounded-lg overflow-hidden" style={{ background: 'var(--bg-tertiary)' }}>
             {/* Background bar (total tasks relative to max) */}
             <motion.div
               className="absolute inset-y-0 left-0 rounded-lg"
-              style={{ background: 'rgba(255, 255, 255, 0.05)' }}
+              style={{ background: 'var(--bg-secondary)' }}
               initial={{ width: 0 }}
               animate={{ width: `${(item.total / maxTotal) * 100}%` }}
               transition={{ duration: 0.8, delay: index * 0.1 }}
@@ -66,12 +67,7 @@ export function AssigneeCategoryChart({ data, color }: AssigneeCategoryChartProp
             <motion.div
               className="absolute inset-y-0 left-0 rounded-lg"
               style={{
-                background: item.progress === 100
-                  ? 'linear-gradient(90deg, var(--neon-green), #059669)'
-                  : `linear-gradient(90deg, ${color}, var(--neon-purple))`,
-                boxShadow: item.progress === 100
-                  ? '0 0 20px rgba(16, 185, 129, 0.4)'
-                  : `0 0 20px ${color}40`,
+                background: item.progress === 100 ? 'var(--success)' : 'var(--accent)',
               }}
               initial={{ width: 0 }}
               animate={{ width: `${(item.total / maxTotal) * (item.progress / 100) * 100}%` }}

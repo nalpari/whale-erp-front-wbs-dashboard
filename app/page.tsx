@@ -61,9 +61,9 @@ export default async function Home() {
               <div
                 className="px-3 py-1 rounded-full text-xs font-mono"
                 style={{
-                  background: 'var(--neon-cyan)15',
-                  color: 'var(--neon-cyan)',
-                  border: '1px solid var(--neon-cyan)30',
+                  background: 'var(--accent-bg)',
+                  color: 'var(--accent)',
+                  border: '1px solid var(--accent)',
                 }}
               >
                 {categoryStats.length}개 카테고리
@@ -84,9 +84,9 @@ export default async function Home() {
               <div
                 className="px-3 py-1 rounded-full text-xs font-mono"
                 style={{
-                  background: 'var(--neon-purple)15',
-                  color: 'var(--neon-purple)',
-                  border: '1px solid var(--neon-purple)30',
+                  background: 'var(--info-bg)',
+                  color: 'var(--info)',
+                  border: '1px solid var(--info)',
                 }}
               >
                 {assigneeStats.length}명
@@ -97,7 +97,7 @@ export default async function Home() {
             {/* Legend */}
             <div className="mt-6 flex flex-wrap justify-center gap-4">
               {assigneeStats.map((stat, index) => {
-                const colorPalette = ['#00f5ff', '#a855f7', '#ff00ff', '#ec4899', '#22c55e', '#f97316', '#3b82f6', '#eab308']
+                const colorPalette = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)', 'var(--chart-6)']
                 const color = colorPalette[index % colorPalette.length]
 
                 return (
@@ -106,7 +106,6 @@ export default async function Home() {
                       className="w-3 h-3 rounded-full"
                       style={{
                         background: color,
-                        boxShadow: `0 0 10px ${color}`,
                       }}
                     />
                     <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
@@ -151,7 +150,7 @@ export default async function Home() {
         </section>
 
         {/* Footer */}
-        <footer className="text-center py-8 border-t" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+        <footer className="text-center py-8 border-t" style={{ borderColor: 'var(--border)' }}>
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
             Whale ERP WBS Dashboard &copy; 2026
           </p>

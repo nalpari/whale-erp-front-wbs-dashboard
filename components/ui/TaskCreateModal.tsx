@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { AnimatePresence } from 'framer-motion'
 import {
   X,
   Calendar,
@@ -97,58 +97,47 @@ export function TaskCreateModal({ isOpen, onClose, onSuccess }: TaskCreateModalP
     }
   }
 
-  const color = 'var(--neon-cyan)'
-
   const inputStyle = {
-    background: 'rgba(255, 255, 255, 0.03)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
+    background: 'var(--bg-tertiary)',
+    border: '1px solid var(--border)',
     color: 'var(--text-primary)',
   }
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: 'rgba(0, 0, 0, 0.7)', backdropFilter: 'blur(8px)' }}
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in"
+          style={{ background: 'rgba(0, 0, 0, 0.5)', backdropFilter: 'blur(4px)' }}
           onClick={handleBackdropClick}
         >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            transition={{ duration: 0.3, type: 'spring', damping: 25 }}
-            className="w-full max-w-xl rounded-2xl overflow-hidden max-h-[90vh] flex flex-col"
+          <div
+            className="w-full max-w-xl rounded-xl overflow-hidden max-h-[90vh] flex flex-col animate-slide-up"
             style={{
               background: 'var(--bg-card)',
-              border: `1px solid ${color}30`,
-              boxShadow: `0 0 60px ${color}20`,
+              border: '1px solid var(--border)',
+              boxShadow: '0 4px 24px rgba(0, 0, 0, 0.15)',
             }}
           >
             {/* Header */}
             <div
               className="p-6 relative flex-shrink-0"
               style={{
-                background: `linear-gradient(135deg, ${color}15, transparent)`,
-                borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                background: 'var(--bg-secondary)',
+                borderBottom: '1px solid var(--border)',
               }}
             >
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 p-2 rounded-lg transition-all hover:scale-110"
+                className="absolute top-4 right-4 p-2 rounded-lg transition-colors hover:bg-[var(--bg-tertiary)]"
                 style={{
-                  background: 'rgba(255, 255, 255, 0.05)',
                   color: 'var(--text-muted)',
                 }}
               >
                 <X className="w-5 h-5" />
               </button>
 
-              <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
+              <h2 className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>
                 새 태스크 등록
               </h2>
               <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
@@ -164,15 +153,15 @@ export function TaskCreateModal({ isOpen, onClose, onSuccess }: TaskCreateModalP
                   className="flex items-center gap-2 text-sm font-medium"
                   style={{ color: 'var(--text-secondary)' }}
                 >
-                  <LayoutGrid className="w-4 h-4" style={{ color: 'var(--neon-cyan)' }} />
+                  <LayoutGrid className="w-4 h-4" style={{ color: 'var(--accent)' }} />
                   메뉴명
                 </label>
                 <input
                   type="text"
                   value={formData.menu_name ?? ''}
                   onChange={(e) => handleChange('menu_name', e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl outline-none transition-all focus:ring-2"
-                  style={{ ...inputStyle, '--tw-ring-color': color } as React.CSSProperties}
+                  className="w-full px-4 py-3 rounded-lg outline-none transition-all focus:ring-2 focus:ring-[var(--accent)]"
+                  style={inputStyle}
                   placeholder="예: Master Data 관리, 직원 관리"
                 />
               </div>
@@ -183,15 +172,15 @@ export function TaskCreateModal({ isOpen, onClose, onSuccess }: TaskCreateModalP
                   className="flex items-center gap-2 text-sm font-medium"
                   style={{ color: 'var(--text-secondary)' }}
                 >
-                  <FolderOpen className="w-4 h-4" style={{ color: 'var(--neon-purple)' }} />
-                  카테고리 <span style={{ color: 'var(--neon-pink)' }}>*</span>
+                  <FolderOpen className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
+                  카테고리 <span style={{ color: 'var(--error)' }}>*</span>
                 </label>
                 <input
                   type="text"
                   value={formData.category}
                   onChange={(e) => handleChange('category', e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl outline-none transition-all focus:ring-2"
-                  style={{ ...inputStyle, '--tw-ring-color': color } as React.CSSProperties}
+                  className="w-full px-4 py-3 rounded-lg outline-none transition-all focus:ring-2 focus:ring-[var(--accent)]"
+                  style={inputStyle}
                   placeholder="예: 프론트엔드, 백엔드"
                 />
               </div>
@@ -202,15 +191,15 @@ export function TaskCreateModal({ isOpen, onClose, onSuccess }: TaskCreateModalP
                   className="flex items-center gap-2 text-sm font-medium"
                   style={{ color: 'var(--text-secondary)' }}
                 >
-                  <FileText className="w-4 h-4" style={{ color }} />
-                  태스크 제목 <span style={{ color: 'var(--neon-pink)' }}>*</span>
+                  <FileText className="w-4 h-4" style={{ color: 'var(--accent)' }} />
+                  태스크 제목 <span style={{ color: 'var(--error)' }}>*</span>
                 </label>
                 <input
                   type="text"
                   value={formData.task_title}
                   onChange={(e) => handleChange('task_title', e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl outline-none transition-all focus:ring-2"
-                  style={{ ...inputStyle, '--tw-ring-color': color } as React.CSSProperties}
+                  className="w-full px-4 py-3 rounded-lg outline-none transition-all focus:ring-2 focus:ring-[var(--accent)]"
+                  style={inputStyle}
                   placeholder="태스크 제목을 입력하세요"
                 />
               </div>
@@ -221,15 +210,15 @@ export function TaskCreateModal({ isOpen, onClose, onSuccess }: TaskCreateModalP
                   className="flex items-center gap-2 text-sm font-medium"
                   style={{ color: 'var(--text-secondary)' }}
                 >
-                  <FileText className="w-4 h-4" style={{ color: 'var(--neon-magenta)' }} />
+                  <FileText className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
                   설명
                 </label>
                 <textarea
                   value={formData.description ?? ''}
                   onChange={(e) => handleChange('description', e.target.value)}
                   rows={3}
-                  className="w-full px-4 py-3 rounded-xl outline-none transition-all focus:ring-2 resize-none"
-                  style={{ ...inputStyle, '--tw-ring-color': color } as React.CSSProperties}
+                  className="w-full px-4 py-3 rounded-lg outline-none transition-all focus:ring-2 focus:ring-[var(--accent)] resize-none"
+                  style={inputStyle}
                   placeholder="태스크에 대한 상세 설명 (선택사항)"
                 />
               </div>
@@ -240,15 +229,15 @@ export function TaskCreateModal({ isOpen, onClose, onSuccess }: TaskCreateModalP
                   className="flex items-center gap-2 text-sm font-medium"
                   style={{ color: 'var(--text-secondary)' }}
                 >
-                  <User className="w-4 h-4" style={{ color: 'var(--neon-green)' }} />
+                  <User className="w-4 h-4" style={{ color: 'var(--success)' }} />
                   담당자
                 </label>
                 <input
                   type="text"
                   value={formData.assignee ?? ''}
                   onChange={(e) => handleChange('assignee', e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl outline-none transition-all focus:ring-2"
-                  style={{ ...inputStyle, '--tw-ring-color': color } as React.CSSProperties}
+                  className="w-full px-4 py-3 rounded-lg outline-none transition-all focus:ring-2 focus:ring-[var(--accent)]"
+                  style={inputStyle}
                   placeholder="담당자 이름"
                 />
               </div>
@@ -261,14 +250,14 @@ export function TaskCreateModal({ isOpen, onClose, onSuccess }: TaskCreateModalP
                     className="flex items-center gap-2 text-sm font-medium"
                     style={{ color: 'var(--text-secondary)' }}
                   >
-                    <CalendarDays className="w-4 h-4" style={{ color }} />
+                    <CalendarDays className="w-4 h-4" style={{ color: 'var(--accent)' }} />
                     시작일
                   </label>
                   <input
                     type="date"
                     value={formData.start_date ?? ''}
                     onChange={(e) => handleChange('start_date', e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-lg outline-none transition-all focus:ring-2 focus:ring-[var(--accent)]"
                     style={inputStyle}
                   />
                 </div>
@@ -279,14 +268,14 @@ export function TaskCreateModal({ isOpen, onClose, onSuccess }: TaskCreateModalP
                     className="flex items-center gap-2 text-sm font-medium"
                     style={{ color: 'var(--text-secondary)' }}
                   >
-                    <Calendar className="w-4 h-4" style={{ color: 'var(--neon-orange)' }} />
+                    <Calendar className="w-4 h-4" style={{ color: 'var(--warning)' }} />
                     마감일
                   </label>
                   <input
                     type="date"
                     value={formData.due_date ?? ''}
                     onChange={(e) => handleChange('due_date', e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-lg outline-none transition-all focus:ring-2 focus:ring-[var(--accent)]"
                     style={inputStyle}
                   />
                 </div>
@@ -298,7 +287,7 @@ export function TaskCreateModal({ isOpen, onClose, onSuccess }: TaskCreateModalP
                   className="flex items-center gap-2 text-sm font-medium"
                   style={{ color: 'var(--text-secondary)' }}
                 >
-                  <Percent className="w-4 h-4" style={{ color }} />
+                  <Percent className="w-4 h-4" style={{ color: 'var(--accent)' }} />
                   진행률
                 </label>
                 <div className="flex items-center gap-4">
@@ -311,15 +300,15 @@ export function TaskCreateModal({ isOpen, onClose, onSuccess }: TaskCreateModalP
                     onChange={(e) => handleChange('progress', Number(e.target.value))}
                     className="flex-1 h-2 rounded-full appearance-none cursor-pointer"
                     style={{
-                      background: `linear-gradient(to right, ${color} 0%, ${color} ${formData.progress}%, rgba(255,255,255,0.1) ${formData.progress}%, rgba(255,255,255,0.1) 100%)`,
+                      background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${formData.progress}%, var(--bg-tertiary) ${formData.progress}%, var(--bg-tertiary) 100%)`,
                     }}
                   />
                   <div
-                    className="w-16 text-center py-2 rounded-lg font-mono font-bold"
+                    className="w-16 text-center py-2 rounded-lg font-mono font-medium text-sm"
                     style={{
-                      background: `${color}15`,
-                      border: `1px solid ${color}30`,
-                      color,
+                      background: 'var(--bg-tertiary)',
+                      border: '1px solid var(--border)',
+                      color: 'var(--accent)',
                     }}
                   >
                     {formData.progress}%
@@ -333,13 +322,13 @@ export function TaskCreateModal({ isOpen, onClose, onSuccess }: TaskCreateModalP
                   className="flex items-center gap-2 text-sm font-medium"
                   style={{ color: 'var(--text-secondary)' }}
                 >
-                  <Flag className="w-4 h-4" style={{ color: 'var(--neon-magenta)' }} />
+                  <Flag className="w-4 h-4" style={{ color: 'var(--info)' }} />
                   상태
                 </label>
                 <select
                   value={formData.status ?? '대기중'}
                   onChange={(e) => handleChange('status', e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl outline-none transition-all cursor-pointer"
+                  className="w-full px-4 py-3 rounded-lg outline-none transition-all cursor-pointer focus:ring-2 focus:ring-[var(--accent)]"
                   style={inputStyle}
                 >
                   {TASK_STATUS_LIST.map((s) => (
@@ -356,15 +345,15 @@ export function TaskCreateModal({ isOpen, onClose, onSuccess }: TaskCreateModalP
                   className="flex items-center gap-2 text-sm font-medium"
                   style={{ color: 'var(--text-secondary)' }}
                 >
-                  <StickyNote className="w-4 h-4" style={{ color: 'var(--neon-pink)' }} />
+                  <StickyNote className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
                   메모
                 </label>
                 <textarea
                   value={formData.memo ?? ''}
                   onChange={(e) => handleChange('memo', e.target.value)}
                   rows={2}
-                  className="w-full px-4 py-3 rounded-xl outline-none transition-all focus:ring-2 resize-none"
-                  style={{ ...inputStyle, '--tw-ring-color': color } as React.CSSProperties}
+                  className="w-full px-4 py-3 rounded-lg outline-none transition-all focus:ring-2 focus:ring-[var(--accent)] resize-none"
+                  style={inputStyle}
                   placeholder="추가 메모 (선택사항)"
                 />
               </div>
@@ -374,9 +363,9 @@ export function TaskCreateModal({ isOpen, onClose, onSuccess }: TaskCreateModalP
                 <div
                   className="p-3 rounded-lg text-sm"
                   style={{
-                    background: 'rgba(255, 0, 100, 0.1)',
-                    border: '1px solid rgba(255, 0, 100, 0.3)',
-                    color: 'var(--neon-pink)',
+                    background: 'var(--error-bg)',
+                    border: '1px solid var(--error)',
+                    color: 'var(--error)',
                   }}
                 >
                   {error}
@@ -387,14 +376,14 @@ export function TaskCreateModal({ isOpen, onClose, onSuccess }: TaskCreateModalP
             {/* Footer */}
             <div
               className="p-6 flex gap-3 flex-shrink-0"
-              style={{ borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}
+              style={{ borderTop: '1px solid var(--border)' }}
             >
               <button
                 onClick={onClose}
-                className="flex-1 px-4 py-3 rounded-xl font-medium transition-all hover:scale-[1.02]"
+                className="flex-1 px-4 py-3 rounded-lg font-medium transition-colors hover:bg-[var(--bg-tertiary)]"
                 style={{
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border)',
                   color: 'var(--text-secondary)',
                 }}
               >
@@ -403,11 +392,10 @@ export function TaskCreateModal({ isOpen, onClose, onSuccess }: TaskCreateModalP
               <button
                 onClick={handleSubmit}
                 disabled={isLoading}
-                className="flex-1 px-4 py-3 rounded-xl font-medium transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 style={{
-                  background: `linear-gradient(135deg, ${color}, ${color}80)`,
-                  color: 'var(--bg-primary)',
-                  boxShadow: `0 0 20px ${color}40`,
+                  background: 'var(--accent)',
+                  color: 'white',
                 }}
               >
                 {isLoading ? (
@@ -420,8 +408,8 @@ export function TaskCreateModal({ isOpen, onClose, onSuccess }: TaskCreateModalP
                 )}
               </button>
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       )}
     </AnimatePresence>
   )
