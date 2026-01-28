@@ -7,12 +7,13 @@ import { Task, TaskStatus, TASK_STATUS_LIST, getStatusColor, UpdateTaskInput } f
 
 interface AssigneeTaskListProps {
   tasks: Task[]
-  color: string
+  /** @deprecated No longer used - kept for backward compatibility */
+  color?: string
   onUpdateField?: (taskId: number, updates: UpdateTaskInput) => Promise<void>
   onDeleteTask?: (taskId: number) => Promise<void>
 }
 
-export function AssigneeTaskList({ tasks, color, onUpdateField, onDeleteTask }: AssigneeTaskListProps) {
+export function AssigneeTaskList({ tasks, onUpdateField, onDeleteTask }: AssigneeTaskListProps) {
   const [search, setSearch] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [expandedTask, setExpandedTask] = useState<number | null>(null)
@@ -111,8 +112,8 @@ export function AssigneeTaskList({ tasks, color, onUpdateField, onDeleteTask }: 
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-3 rounded-xl outline-none transition-all"
             style={{
-              background: 'rgba(255, 255, 255, 0.03)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border)',
               color: 'var(--text-primary)',
             }}
           />
@@ -125,8 +126,8 @@ export function AssigneeTaskList({ tasks, color, onUpdateField, onDeleteTask }: 
             onChange={(e) => setSelectedCategory(e.target.value || null)}
             className="appearance-none px-4 py-3 pr-10 rounded-xl outline-none cursor-pointer min-w-[200px]"
             style={{
-              background: 'rgba(255, 255, 255, 0.03)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border)',
               color: 'var(--text-primary)',
             }}
           >
@@ -162,8 +163,8 @@ export function AssigneeTaskList({ tasks, color, onUpdateField, onDeleteTask }: 
                 transition={{ delay: index * 0.02 }}
                 className="rounded-xl overflow-hidden cursor-pointer"
                 style={{
-                  background: 'rgba(255, 255, 255, 0.02)',
-                  border: isExpanded ? `1px solid ${color}50` : '1px solid rgba(255, 255, 255, 0.05)',
+                  background: 'var(--bg-secondary)',
+                  border: isExpanded ? '1px solid var(--accent)' : '1px solid var(--border)',
                 }}
                 onClick={() => setExpandedTask(isExpanded ? null : task.id)}
               >
@@ -173,9 +174,9 @@ export function AssigneeTaskList({ tasks, color, onUpdateField, onDeleteTask }: 
                     <div
                       className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 font-mono text-sm font-bold"
                       style={{
-                        background: `${color}15`,
-                        border: `1px solid ${color}30`,
-                        color: color,
+                        background: 'var(--accent-bg)',
+                        border: '1px solid var(--accent)',
+                        color: 'var(--accent)',
                       }}
                     >
                       {task.num}
@@ -193,9 +194,9 @@ export function AssigneeTaskList({ tasks, color, onUpdateField, onDeleteTask }: 
                           <span
                             className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full"
                             style={{
-                              background: 'var(--neon-cyan)15',
-                              border: '1px solid var(--neon-cyan)30',
-                              color: 'var(--neon-cyan)',
+                              background: 'var(--accent-bg)',
+                              border: '1px solid var(--accent)',
+                              color: 'var(--accent)',
                             }}
                           >
                             <LayoutGrid className="w-3 h-3" />
@@ -246,22 +247,21 @@ export function AssigneeTaskList({ tasks, color, onUpdateField, onDeleteTask }: 
                       <span
                         className="text-lg font-bold font-mono"
                         style={{
-                          color: task.progress === 100 ? 'var(--neon-green)' :
-                            task.progress > 0 ? 'var(--neon-orange)' : 'var(--text-muted)',
+                          color: task.progress === 100 ? 'var(--success)' :
+                            task.progress > 0 ? 'var(--warning)' : 'var(--text-muted)',
                         }}
                       >
                         {task.progress}%
                       </span>
                       <div
                         className="w-20 h-1.5 rounded-full mt-2 overflow-hidden"
-                        style={{ background: 'rgba(255, 255, 255, 0.1)' }}
+                        style={{ background: 'var(--bg-tertiary)' }}
                       >
                         <motion.div
                           className="h-full rounded-full"
                           style={{
-                            background: task.progress === 100 ? 'var(--neon-green)' :
-                              task.progress > 0 ? `linear-gradient(90deg, ${color}, var(--neon-purple))` :
-                                'var(--text-muted)',
+                            background: task.progress === 100 ? 'var(--success)' :
+                              task.progress > 0 ? 'var(--accent)' : 'var(--text-muted)',
                           }}
                           initial={{ width: 0 }}
                           animate={{ width: `${task.progress}%` }}
@@ -284,17 +284,17 @@ export function AssigneeTaskList({ tasks, color, onUpdateField, onDeleteTask }: 
                         <div
                           className="mt-4 pt-4 space-y-4"
                           style={{
-                            borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+                            borderTop: '1px solid var(--border)',
                           }}
                           onClick={(e) => e.stopPropagation()}
                         >
                           {/* 설명 */}
                           <div className="space-y-2">
                             <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-                              <AlignLeft className="w-4 h-4" style={{ color: 'var(--neon-green)' }} />
+                              <AlignLeft className="w-4 h-4" style={{ color: 'var(--success)' }} />
                               설명
                               {isFieldUpdating(task.id, 'description') && (
-                                <Loader2 className="w-3 h-3 animate-spin" style={{ color }} />
+                                <Loader2 className="w-3 h-3 animate-spin" style={{ color: 'var(--accent)' }} />
                               )}
                             </label>
                             <textarea
@@ -317,8 +317,8 @@ export function AssigneeTaskList({ tasks, color, onUpdateField, onDeleteTask }: 
                               }}
                               className="w-full px-3 py-2 rounded-lg outline-none text-sm resize-none"
                               style={{
-                                background: 'rgba(255, 255, 255, 0.03)',
-                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                background: 'var(--bg-tertiary)',
+                                border: '1px solid var(--border)',
                                 color: 'var(--text-primary)',
                               }}
                             />
@@ -327,10 +327,10 @@ export function AssigneeTaskList({ tasks, color, onUpdateField, onDeleteTask }: 
                           {/* 진행률 */}
                           <div className="space-y-2">
                             <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-                              <Percent className="w-4 h-4" style={{ color }} />
+                              <Percent className="w-4 h-4" style={{ color: 'var(--accent)' }} />
                               진행률
                               {isFieldUpdating(task.id, 'progress') && (
-                                <Loader2 className="w-3 h-3 animate-spin" style={{ color }} />
+                                <Loader2 className="w-3 h-3 animate-spin" style={{ color: 'var(--accent)' }} />
                               )}
                             </label>
                             <div className="flex items-center gap-4">
@@ -342,9 +342,9 @@ export function AssigneeTaskList({ tasks, color, onUpdateField, onDeleteTask }: 
                                 defaultValue={task.progress}
                                 onPointerUp={(e) => {
                                   const newProgress = Number((e.target as HTMLInputElement).value)
-                                  // 진행률에 따라 상태 자동 변경: 0=진행중, 100=완료
-                                  if (newProgress === 0 && task.status !== '진행중') {
-                                    onUpdateField?.(task.id, { progress: newProgress, status: '진행중' })
+                                  // 진행률에 따라 상태 자동 변경: 0=대기중, 100=완료, 그 외=진행중
+                                  if (newProgress === 0 && task.status !== '대기중') {
+                                    onUpdateField?.(task.id, { progress: newProgress, status: '대기중' })
                                   } else if (newProgress === 100 && task.status !== '완료') {
                                     onUpdateField?.(task.id, { progress: newProgress, status: '완료' })
                                   } else if (task.status === '대기중' && newProgress > 0) {
@@ -355,15 +355,15 @@ export function AssigneeTaskList({ tasks, color, onUpdateField, onDeleteTask }: 
                                 }}
                                 className="flex-1 h-2 rounded-full appearance-none cursor-pointer"
                                 style={{
-                                  background: `linear-gradient(to right, ${color} 0%, ${color} ${task.progress}%, rgba(255,255,255,0.1) ${task.progress}%, rgba(255,255,255,0.1) 100%)`,
+                                  background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${task.progress}%, var(--bg-tertiary) ${task.progress}%, var(--bg-tertiary) 100%)`,
                                 }}
                               />
                               <div
                                 className="w-14 text-center py-1.5 rounded-lg font-mono font-bold text-sm"
                                 style={{
-                                  background: `${color}15`,
-                                  border: `1px solid ${color}30`,
-                                  color,
+                                  background: 'var(--accent-bg)',
+                                  border: '1px solid var(--accent)',
+                                  color: 'var(--accent)',
                                 }}
                               >
                                 {task.progress}%
@@ -374,10 +374,10 @@ export function AssigneeTaskList({ tasks, color, onUpdateField, onDeleteTask }: 
                           {/* 상태 선택 */}
                           <div className="space-y-2">
                             <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-                              <Flag className="w-4 h-4" style={{ color: 'var(--neon-magenta)' }} />
+                              <Flag className="w-4 h-4" style={{ color: 'var(--info)' }} />
                               상태
                               {isFieldUpdating(task.id, 'status') && (
-                                <Loader2 className="w-3 h-3 animate-spin" style={{ color }} />
+                                <Loader2 className="w-3 h-3 animate-spin" style={{ color: 'var(--accent)' }} />
                               )}
                             </label>
                             <select
@@ -385,13 +385,13 @@ export function AssigneeTaskList({ tasks, color, onUpdateField, onDeleteTask }: 
                               onChange={(e) => handleFieldUpdate(task.id, 'status', e.target.value as TaskStatus)}
                               className="w-full px-3 py-2 rounded-lg outline-none text-sm cursor-pointer"
                               style={{
-                                background: 'rgba(255, 255, 255, 0.03)',
-                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                background: 'var(--bg-tertiary)',
+                                border: '1px solid var(--border)',
                                 color: 'var(--text-primary)',
                               }}
                             >
                               {TASK_STATUS_LIST.map((s) => (
-                                <option key={s} value={s} style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                                <option key={s} value={s} style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
                                   {s}
                                 </option>
                               ))}
@@ -402,10 +402,10 @@ export function AssigneeTaskList({ tasks, color, onUpdateField, onDeleteTask }: 
                           <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                               <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-                                <CalendarDays className="w-4 h-4" style={{ color }} />
+                                <CalendarDays className="w-4 h-4" style={{ color: 'var(--accent)' }} />
                                 시작일
                                 {isFieldUpdating(task.id, 'start_date') && (
-                                  <Loader2 className="w-3 h-3 animate-spin" style={{ color }} />
+                                  <Loader2 className="w-3 h-3 animate-spin" style={{ color: 'var(--accent)' }} />
                                 )}
                               </label>
                               <input
@@ -415,18 +415,18 @@ export function AssigneeTaskList({ tasks, color, onUpdateField, onDeleteTask }: 
                                 onKeyDown={(e) => handleInputKeyDown(e, task.id, 'start_date', (e.target as HTMLInputElement).value || null)}
                                 className="w-full px-3 py-2 rounded-lg outline-none text-sm"
                                 style={{
-                                  background: 'rgba(255, 255, 255, 0.03)',
-                                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                                  background: 'var(--bg-tertiary)',
+                                  border: '1px solid var(--border)',
                                   color: 'var(--text-primary)',
                                 }}
                               />
                             </div>
                             <div className="space-y-2">
                               <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-                                <Calendar className="w-4 h-4" style={{ color: 'var(--neon-orange)' }} />
+                                <Calendar className="w-4 h-4" style={{ color: 'var(--warning)' }} />
                                 마감일
                                 {isFieldUpdating(task.id, 'due_date') && (
-                                  <Loader2 className="w-3 h-3 animate-spin" style={{ color }} />
+                                  <Loader2 className="w-3 h-3 animate-spin" style={{ color: 'var(--accent)' }} />
                                 )}
                               </label>
                               <input
@@ -436,8 +436,8 @@ export function AssigneeTaskList({ tasks, color, onUpdateField, onDeleteTask }: 
                                 onKeyDown={(e) => handleInputKeyDown(e, task.id, 'due_date', (e.target as HTMLInputElement).value || null)}
                                 className="w-full px-3 py-2 rounded-lg outline-none text-sm"
                                 style={{
-                                  background: 'rgba(255, 255, 255, 0.03)',
-                                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                                  background: 'var(--bg-tertiary)',
+                                  border: '1px solid var(--border)',
                                   color: 'var(--text-primary)',
                                 }}
                               />
@@ -447,10 +447,10 @@ export function AssigneeTaskList({ tasks, color, onUpdateField, onDeleteTask }: 
                           {/* 메뉴명 입력 */}
                           <div className="space-y-2">
                             <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-                              <LayoutGrid className="w-4 h-4" style={{ color: 'var(--neon-cyan)' }} />
+                              <LayoutGrid className="w-4 h-4" style={{ color: 'var(--accent)' }} />
                               메뉴명
                               {isFieldUpdating(task.id, 'menu_name') && (
-                                <Loader2 className="w-3 h-3 animate-spin" style={{ color }} />
+                                <Loader2 className="w-3 h-3 animate-spin" style={{ color: 'var(--accent)' }} />
                               )}
                             </label>
                             <input
@@ -473,8 +473,8 @@ export function AssigneeTaskList({ tasks, color, onUpdateField, onDeleteTask }: 
                               }}
                               className="w-full px-3 py-2 rounded-lg outline-none text-sm"
                               style={{
-                                background: 'rgba(255, 255, 255, 0.03)',
-                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                background: 'var(--bg-tertiary)',
+                                border: '1px solid var(--border)',
                                 color: 'var(--text-primary)',
                               }}
                             />
@@ -483,10 +483,10 @@ export function AssigneeTaskList({ tasks, color, onUpdateField, onDeleteTask }: 
                           {/* 메모 입력 */}
                           <div className="space-y-2">
                             <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-                              <FileText className="w-4 h-4" style={{ color: 'var(--neon-purple)' }} />
+                              <FileText className="w-4 h-4" style={{ color: 'var(--info)' }} />
                               메모
                               {isFieldUpdating(task.id, 'memo') && (
-                                <Loader2 className="w-3 h-3 animate-spin" style={{ color }} />
+                                <Loader2 className="w-3 h-3 animate-spin" style={{ color: 'var(--accent)' }} />
                               )}
                             </label>
                             <textarea
@@ -509,8 +509,8 @@ export function AssigneeTaskList({ tasks, color, onUpdateField, onDeleteTask }: 
                               }}
                               className="w-full px-3 py-2 rounded-lg outline-none text-sm resize-none"
                               style={{
-                                background: 'rgba(255, 255, 255, 0.03)',
-                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                background: 'var(--bg-tertiary)',
+                                border: '1px solid var(--border)',
                                 color: 'var(--text-primary)',
                               }}
                             />
@@ -521,9 +521,9 @@ export function AssigneeTaskList({ tasks, color, onUpdateField, onDeleteTask }: 
                             <div
                               className="p-2 rounded-lg text-sm"
                               style={{
-                                background: 'rgba(255, 0, 100, 0.1)',
-                                border: '1px solid rgba(255, 0, 100, 0.3)',
-                                color: 'var(--neon-pink)',
+                                background: 'var(--error-bg)',
+                                border: '1px solid var(--error)',
+                                color: 'var(--error)',
                               }}
                             >
                               {error}

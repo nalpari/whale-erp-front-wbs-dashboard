@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { AnimatePresence } from 'framer-motion'
 import { X, Upload, User, Loader2, FileIcon, AlertCircle, Plus, Trash2, FileText, AlignLeft } from 'lucide-react'
 import { createScreenDesignPost } from '@/lib/supabase'
 
@@ -156,11 +156,9 @@ export function ScreenDesignUploadModal({
     }
   }
 
-  const color = 'var(--neon-cyan)'
-
   const inputStyle = {
-    background: 'rgba(255, 255, 255, 0.03)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
+    background: 'var(--bg-tertiary)',
+    border: '1px solid var(--border)',
     color: 'var(--text-primary)',
   }
 
@@ -173,48 +171,39 @@ export function ScreenDesignUploadModal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: 'rgba(0, 0, 0, 0.7)', backdropFilter: 'blur(8px)' }}
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in"
+          style={{ background: 'rgba(0, 0, 0, 0.5)', backdropFilter: 'blur(4px)' }}
           onClick={handleBackdropClick}
         >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            transition={{ duration: 0.3, type: 'spring', damping: 25 }}
-            className="w-full max-w-md rounded-2xl overflow-hidden"
+          <div
+            className="relative w-full max-w-md rounded-xl overflow-hidden animate-slide-up"
             style={{
               background: 'var(--bg-card)',
-              border: '1px solid rgba(0, 245, 255, 0.3)',
-              boxShadow: '0 0 60px rgba(0, 245, 255, 0.2)',
+              border: '1px solid var(--border)',
+              boxShadow: '0 4px 24px rgba(0, 0, 0, 0.15)',
             }}
           >
             {/* Header */}
             <div
               className="p-6 relative"
               style={{
-                background: 'linear-gradient(135deg, rgba(0, 245, 255, 0.15), transparent)',
-                borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                background: 'var(--bg-secondary)',
+                borderBottom: '1px solid var(--border)',
               }}
             >
               <button
                 onClick={handleClose}
                 disabled={isLoading}
-                className="absolute top-4 right-4 p-2 rounded-lg transition-all hover:scale-110 disabled:opacity-50"
+                className="absolute top-4 right-4 p-2 rounded-lg transition-colors hover:bg-[var(--bg-tertiary)] disabled:opacity-50"
                 style={{
-                  background: 'rgba(255, 255, 255, 0.05)',
                   color: 'var(--text-muted)',
                 }}
               >
                 <X className="w-5 h-5" />
               </button>
 
-              <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
+              <h2 className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>
                 화면설계서 업로드
               </h2>
               <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
@@ -230,15 +219,15 @@ export function ScreenDesignUploadModal({
                   className="flex items-center gap-2 text-sm font-medium"
                   style={{ color: 'var(--text-secondary)' }}
                 >
-                  <FileText className="w-4 h-4" style={{ color }} />
-                  제목 <span style={{ color: 'var(--neon-pink)' }}>*</span>
+                  <FileText className="w-4 h-4" style={{ color: 'var(--accent)' }} />
+                  제목 <span style={{ color: 'var(--error)' }}>*</span>
                 </label>
                 <input
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl outline-none transition-all focus:ring-2"
-                  style={{ ...inputStyle, '--tw-ring-color': color } as React.CSSProperties}
+                  className="w-full px-4 py-3 rounded-lg outline-none transition-all focus:ring-2 focus:ring-[var(--accent)]"
+                  style={inputStyle}
                   placeholder="제목을 입력하세요"
                   disabled={isLoading}
                 />
@@ -250,15 +239,15 @@ export function ScreenDesignUploadModal({
                   className="flex items-center gap-2 text-sm font-medium"
                   style={{ color: 'var(--text-secondary)' }}
                 >
-                  <AlignLeft className="w-4 h-4" style={{ color: 'var(--neon-purple)' }} />
+                  <AlignLeft className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
                   내용
                 </label>
                 <textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   rows={3}
-                  className="w-full px-4 py-3 rounded-xl outline-none transition-all focus:ring-2 resize-none"
-                  style={{ ...inputStyle, '--tw-ring-color': 'var(--neon-purple)' } as React.CSSProperties}
+                  className="w-full px-4 py-3 rounded-lg outline-none transition-all focus:ring-2 focus:ring-[var(--accent)] resize-none"
+                  style={inputStyle}
                   placeholder="내용을 입력하세요 (선택)"
                   disabled={isLoading}
                 />
@@ -270,8 +259,8 @@ export function ScreenDesignUploadModal({
                   className="flex items-center gap-2 text-sm font-medium"
                   style={{ color: 'var(--text-secondary)' }}
                 >
-                  <Upload className="w-4 h-4" style={{ color: 'var(--neon-green)' }} />
-                  파일 선택 <span style={{ color: 'var(--neon-pink)' }}>*</span>
+                  <Upload className="w-4 h-4" style={{ color: 'var(--success)' }} />
+                  파일 선택 <span style={{ color: 'var(--error)' }}>*</span>
                   <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
                     (여러 파일 선택 가능)
                   </span>
@@ -282,12 +271,12 @@ export function ScreenDesignUploadModal({
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
-                  className="relative cursor-pointer rounded-xl p-4 text-center transition-all"
+                  className="relative cursor-pointer rounded-lg p-4 text-center transition-all"
                   style={{
-                    background: isDragging ? 'rgba(0, 245, 255, 0.15)' : 'rgba(255, 255, 255, 0.03)',
+                    background: isDragging ? 'var(--accent-bg)' : 'var(--bg-tertiary)',
                     border: isDragging
-                      ? '2px dashed var(--neon-cyan)'
-                      : '2px dashed rgba(255, 255, 255, 0.15)',
+                      ? '2px dashed var(--accent)'
+                      : '2px dashed var(--border)',
                   }}
                 >
                   <input
@@ -317,12 +306,12 @@ export function ScreenDesignUploadModal({
                         key={`${file.name}-${index}`}
                         className="flex items-center justify-between p-3 rounded-lg"
                         style={{
-                          background: 'rgba(255, 255, 255, 0.03)',
-                          border: '1px solid rgba(255, 255, 255, 0.1)',
+                          background: 'var(--bg-tertiary)',
+                          border: '1px solid var(--border)',
                         }}
                       >
                         <div className="flex items-center gap-3 min-w-0">
-                          <FileIcon className="w-5 h-5 shrink-0" style={{ color: 'var(--neon-green)' }} />
+                          <FileIcon className="w-5 h-5 shrink-0" style={{ color: 'var(--success)' }} />
                           <div className="min-w-0">
                             <p
                               className="font-medium truncate text-sm"
@@ -341,10 +330,9 @@ export function ScreenDesignUploadModal({
                             e.stopPropagation()
                             handleRemoveFile(index)
                           }}
-                          className="p-1.5 rounded-lg transition-all hover:scale-110"
+                          className="p-1.5 rounded-lg transition-colors hover:bg-[var(--error-bg)]"
                           style={{
-                            background: 'rgba(255, 0, 100, 0.1)',
-                            color: 'var(--neon-pink)',
+                            color: 'var(--error)',
                           }}
                           disabled={isLoading}
                         >
@@ -362,15 +350,15 @@ export function ScreenDesignUploadModal({
                   className="flex items-center gap-2 text-sm font-medium"
                   style={{ color: 'var(--text-secondary)' }}
                 >
-                  <User className="w-4 h-4" style={{ color: 'var(--neon-orange)' }} />
-                  등록자 <span style={{ color: 'var(--neon-pink)' }}>*</span>
+                  <User className="w-4 h-4" style={{ color: 'var(--warning)' }} />
+                  등록자 <span style={{ color: 'var(--error)' }}>*</span>
                 </label>
                 <input
                   type="text"
                   value={author}
                   onChange={(e) => setAuthor(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl outline-none transition-all focus:ring-2"
-                  style={{ ...inputStyle, '--tw-ring-color': 'var(--neon-orange)' } as React.CSSProperties}
+                  className="w-full px-4 py-3 rounded-lg outline-none transition-all focus:ring-2 focus:ring-[var(--accent)]"
+                  style={inputStyle}
                   placeholder="등록자 이름을 입력하세요"
                   disabled={isLoading}
                 />
@@ -381,9 +369,9 @@ export function ScreenDesignUploadModal({
                 <div
                   className="p-3 rounded-lg text-sm flex items-center gap-2"
                   style={{
-                    background: 'rgba(255, 0, 100, 0.1)',
-                    border: '1px solid rgba(255, 0, 100, 0.3)',
-                    color: 'var(--neon-pink)',
+                    background: 'var(--error-bg)',
+                    border: '1px solid var(--error)',
+                    color: 'var(--error)',
                   }}
                 >
                   <AlertCircle className="w-4 h-4 shrink-0" />
@@ -395,15 +383,15 @@ export function ScreenDesignUploadModal({
             {/* Footer */}
             <div
               className="p-6 flex gap-3"
-              style={{ borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}
+              style={{ borderTop: '1px solid var(--border)' }}
             >
               <button
                 onClick={handleClose}
                 disabled={isLoading}
-                className="flex-1 px-4 py-3 rounded-xl font-medium transition-all hover:scale-[1.02] disabled:opacity-50"
+                className="flex-1 px-4 py-3 rounded-lg font-medium transition-colors hover:bg-[var(--bg-tertiary)] disabled:opacity-50"
                 style={{
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border)',
                   color: 'var(--text-secondary)',
                 }}
               >
@@ -412,11 +400,10 @@ export function ScreenDesignUploadModal({
               <button
                 onClick={handleSubmit}
                 disabled={isLoading}
-                className="flex-1 px-4 py-3 rounded-xl font-medium transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 style={{
-                  background: 'linear-gradient(135deg, var(--neon-cyan), rgba(0, 245, 255, 0.5))',
-                  color: 'var(--bg-primary)',
-                  boxShadow: '0 0 20px rgba(0, 245, 255, 0.4)',
+                  background: 'var(--accent)',
+                  color: 'white',
                 }}
               >
                 {isLoading ? (
@@ -432,18 +419,15 @@ export function ScreenDesignUploadModal({
 
             {/* Loading Overlay */}
             {isLoading && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-0 flex items-center justify-center rounded-2xl"
+              <div
+                className="absolute inset-0 flex items-center justify-center rounded-xl animate-fade-in"
                 style={{
-                  background: 'rgba(0, 0, 0, 0.7)',
+                  background: 'rgba(0, 0, 0, 0.6)',
                   backdropFilter: 'blur(4px)',
                 }}
               >
                 <div className="flex flex-col items-center gap-4">
-                  <Loader2 className="w-12 h-12 animate-spin" style={{ color: 'var(--neon-cyan)' }} />
+                  <Loader2 className="w-12 h-12 animate-spin" style={{ color: 'var(--accent)' }} />
                   <p className="text-lg font-medium" style={{ color: 'var(--text-primary)' }}>
                     업로드 중...
                   </p>
@@ -451,10 +435,10 @@ export function ScreenDesignUploadModal({
                     파일을 업로드하고 있습니다. 잠시만 기다려주세요.
                   </p>
                 </div>
-              </motion.div>
+              </div>
             )}
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       )}
     </AnimatePresence>
   )

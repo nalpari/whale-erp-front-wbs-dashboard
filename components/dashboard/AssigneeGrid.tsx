@@ -1,6 +1,5 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { User, ArrowRight } from 'lucide-react'
 import { GlowCard } from '@/components/ui/GlowCard'
@@ -11,27 +10,25 @@ interface AssigneeGridProps {
   data: AssigneeStats[]
 }
 
-// 동적 색상 팔레트 - 새 담당자 추가 시 자동 할당
-const COLOR_PALETTE = [
-  { color: '#00f5ff', glow: 'cyan' },
-  { color: '#a855f7', glow: 'purple' },
-  { color: '#ff00ff', glow: 'magenta' },
-  { color: '#ec4899', glow: 'pink' },
-  { color: '#22c55e', glow: 'green' },
-  { color: '#f97316', glow: 'orange' },
-  { color: '#3b82f6', glow: 'blue' },
-  { color: '#eab308', glow: 'yellow' },
+// Simplified color palette using CSS variables
+const CHART_COLORS = [
+  'var(--chart-1)',
+  'var(--chart-2)',
+  'var(--chart-3)',
+  'var(--chart-4)',
+  'var(--chart-5)',
+  'var(--chart-6)',
 ]
 
 function getAssigneeColor(index: number) {
-  return COLOR_PALETTE[index % COLOR_PALETTE.length]
+  return CHART_COLORS[index % CHART_COLORS.length]
 }
 
 export function AssigneeGrid({ data }: AssigneeGridProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {data.map((assignee, index) => {
-        const colorConfig = getAssigneeColor(index)
+        const color = getAssigneeColor(index)
 
         return (
           <Link
@@ -39,44 +36,33 @@ export function AssigneeGrid({ data }: AssigneeGridProps) {
             href={`/assignee/${encodeURIComponent(assignee.assignee)}`}
           >
             <GlowCard
-              glowColor={colorConfig.glow as 'cyan' | 'magenta' | 'purple' | 'pink' | 'green' | 'orange' | 'blue'}
-              delay={index * 0.15}
+              delay={index * 0.08}
               className="p-6 cursor-pointer group h-full"
             >
               {/* Header */}
               <div className="flex items-center gap-3 mb-6">
-                <motion.div
+                <div
                   className="w-12 h-12 rounded-xl flex items-center justify-center relative"
                   style={{
-                    background: `linear-gradient(135deg, ${colorConfig.color}30, ${colorConfig.color}10)`,
-                    border: `1px solid ${colorConfig.color}40`,
-                  }}
-                  whileHover={{
-                    scale: 1.1,
-                    boxShadow: `0 0 30px ${colorConfig.color}50`,
+                    background: 'var(--bg-tertiary)',
+                    border: '1px solid var(--border)',
                   }}
                 >
-                  <User className="w-6 h-6" style={{ color: colorConfig.color }} />
+                  <User className="w-6 h-6" style={{ color }} />
 
-                  {/* Online indicator */}
-                  <motion.div
+                  {/* Static online indicator */}
+                  <div
                     className="absolute -top-1 -right-1 w-3 h-3 rounded-full"
                     style={{
-                      background: 'var(--neon-green)',
-                      boxShadow: '0 0 10px var(--neon-green)',
+                      background: 'var(--success)',
                     }}
-                    animate={{
-                      scale: [1, 1.2, 1],
-                      opacity: [1, 0.8, 1],
-                    }}
-                    transition={{ duration: 2, repeat: Infinity }}
                   />
-                </motion.div>
+                </div>
 
                 <div className="flex-1 min-w-0">
                   <h3
                     className="font-bold text-lg truncate"
-                    style={{ color: colorConfig.color }}
+                    style={{ color: 'var(--text-primary)' }}
                   >
                     {assignee.assignee}
                   </h3>
@@ -95,7 +81,7 @@ export function AssigneeGrid({ data }: AssigneeGridProps) {
                   progress={assignee.progress}
                   size={100}
                   strokeWidth={8}
-                  color={colorConfig.color}
+                  color={color}
                 />
               </div>
 
@@ -103,11 +89,11 @@ export function AssigneeGrid({ data }: AssigneeGridProps) {
               <div className="grid grid-cols-3 gap-2 text-center mb-4">
                 <div
                   className="p-2 rounded-lg"
-                  style={{ background: 'rgba(255, 255, 255, 0.03)' }}
+                  style={{ background: 'var(--bg-tertiary)' }}
                 >
                   <p
                     className="text-lg font-bold font-mono"
-                    style={{ color: colorConfig.color }}
+                    style={{ color: 'var(--text-primary)' }}
                   >
                     {assignee.total}
                   </p>
@@ -117,11 +103,11 @@ export function AssigneeGrid({ data }: AssigneeGridProps) {
                 </div>
                 <div
                   className="p-2 rounded-lg"
-                  style={{ background: 'rgba(255, 255, 255, 0.03)' }}
+                  style={{ background: 'var(--bg-tertiary)' }}
                 >
                   <p
                     className="text-lg font-bold font-mono"
-                    style={{ color: 'var(--neon-green)' }}
+                    style={{ color: 'var(--success)' }}
                   >
                     {assignee.completed}
                   </p>
@@ -131,7 +117,7 @@ export function AssigneeGrid({ data }: AssigneeGridProps) {
                 </div>
                 <div
                   className="p-2 rounded-lg"
-                  style={{ background: 'rgba(255, 255, 255, 0.03)' }}
+                  style={{ background: 'var(--bg-tertiary)' }}
                 >
                   <p
                     className="text-lg font-bold font-mono"
@@ -152,9 +138,9 @@ export function AssigneeGrid({ data }: AssigneeGridProps) {
                     key={cat}
                     className="text-xs px-2 py-1 rounded-full"
                     style={{
-                      background: `${colorConfig.color}15`,
+                      background: 'var(--bg-tertiary)',
                       color: 'var(--text-secondary)',
-                      border: `1px solid ${colorConfig.color}20`,
+                      border: '1px solid var(--border)',
                     }}
                   >
                     {cat.length > 8 ? cat.slice(0, 8) + '...' : cat}
@@ -164,7 +150,7 @@ export function AssigneeGrid({ data }: AssigneeGridProps) {
                   <span
                     className="text-xs px-2 py-1 rounded-full"
                     style={{
-                      background: 'rgba(255, 255, 255, 0.05)',
+                      background: 'var(--bg-tertiary)',
                       color: 'var(--text-muted)',
                     }}
                   >
@@ -174,18 +160,18 @@ export function AssigneeGrid({ data }: AssigneeGridProps) {
               </div>
 
               {/* View button */}
-              <motion.div
+              <div
                 className="flex items-center justify-center gap-2 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
                 style={{
-                  background: `${colorConfig.color}15`,
-                  border: `1px solid ${colorConfig.color}30`,
+                  background: 'var(--bg-tertiary)',
+                  border: '1px solid var(--border)',
                 }}
               >
-                <span className="text-sm font-medium" style={{ color: colorConfig.color }}>
+                <span className="text-sm font-medium" style={{ color: 'var(--accent)' }}>
                   상세 보기
                 </span>
-                <ArrowRight className="w-4 h-4" style={{ color: colorConfig.color }} />
-              </motion.div>
+                <ArrowRight className="w-4 h-4" style={{ color: 'var(--accent)' }} />
+              </div>
             </GlowCard>
           </Link>
         )

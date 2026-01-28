@@ -15,7 +15,7 @@ interface AnimatedCounterProps {
 
 export function AnimatedCounter({
   value,
-  duration = 2,
+  duration = 1,
   className = '',
   suffix = '',
   prefix = '',
@@ -23,7 +23,7 @@ export function AnimatedCounter({
   style,
 }: AnimatedCounterProps) {
   const ref = useRef<HTMLSpanElement>(null)
-  const isInView = useInView(ref, { once: true, margin: '-100px' })
+  const isInView = useInView(ref, { once: true, margin: '-50px' })
   const [hasAnimated, setHasAnimated] = useState(false)
 
   const spring = useSpring(0, {
@@ -37,7 +37,6 @@ export function AnimatedCounter({
 
   useEffect(() => {
     if (isInView && !hasAnimated) {
-      // Use requestAnimationFrame to avoid synchronous setState issue
       requestAnimationFrame(() => {
         spring.set(value)
         setHasAnimated(true)
@@ -50,9 +49,9 @@ export function AnimatedCounter({
       ref={ref}
       className={`tabular-nums ${className}`}
       style={style}
-      initial={{ opacity: 0, scale: 0.5 }}
-      animate={isInView ? { opacity: 1, scale: 1 } : {}}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
+      initial={{ opacity: 0 }}
+      animate={isInView ? { opacity: 1 } : {}}
+      transition={{ duration: 0.2, ease: 'easeOut' }}
     >
       {prefix}
       <motion.span>{display}</motion.span>
@@ -71,7 +70,7 @@ interface AnimatedPercentageProps {
 export function AnimatedPercentage({
   value,
   size = 'md',
-  color = 'var(--neon-cyan)',
+  color = 'var(--accent)',
   className = '',
 }: AnimatedPercentageProps) {
   const sizeClasses = {
@@ -87,7 +86,7 @@ export function AnimatedPercentage({
         value={value}
         suffix="%"
         className="font-mono"
-        style={{ color, textShadow: `0 0 20px ${color}` } as React.CSSProperties}
+        style={{ color }}
       />
     </div>
   )

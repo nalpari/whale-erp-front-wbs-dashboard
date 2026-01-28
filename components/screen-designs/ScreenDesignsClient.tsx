@@ -86,11 +86,11 @@ function FileDropdown({
         onClick={() => onDownload(file.file_url, file.file_name)}
         className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm"
         style={{
-          background: 'rgba(16, 185, 129, 0.1)',
-          border: '1px solid rgba(16, 185, 129, 0.3)',
-          color: 'var(--neon-green)',
+          background: 'var(--success-bg)',
+          border: '1px solid var(--success)',
+          color: 'var(--success)',
         }}
-        whileHover={{ scale: 1.02, background: 'rgba(16, 185, 129, 0.2)' }}
+        whileHover={{ background: 'var(--success-bg)' }}
         whileTap={{ scale: 0.98 }}
         title={file.file_name}
       >
@@ -107,11 +107,11 @@ function FileDropdown({
         onClick={() => setIsOpen(!isOpen)}
         className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm"
         style={{
-          background: 'rgba(0, 245, 255, 0.1)',
-          border: '1px solid rgba(0, 245, 255, 0.3)',
-          color: 'var(--neon-cyan)',
+          background: 'var(--accent-bg)',
+          border: '1px solid var(--accent)',
+          color: 'var(--accent)',
         }}
-        whileHover={{ scale: 1.02, background: 'rgba(0, 245, 255, 0.2)' }}
+        whileHover={{ background: 'var(--accent-bg)' }}
         whileTap={{ scale: 0.98 }}
       >
         <Paperclip className="w-4 h-4" />
@@ -151,9 +151,9 @@ function FileDropdown({
                         }}
                         className="flex-1 flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors"
                         style={{ color: 'var(--text-primary)' }}
-                        whileHover={{ background: 'rgba(0, 245, 255, 0.1)' }}
+                        whileHover={{ background: 'var(--bg-tertiary)' }}
                       >
-                        <Download className="w-4 h-4 shrink-0" style={{ color: 'var(--neon-green)' }} />
+                        <Download className="w-4 h-4 shrink-0" style={{ color: 'var(--success)' }} />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm break-words">{file.file_name}</p>
                           {file.file_size && (
@@ -173,12 +173,11 @@ function FileDropdown({
                           }}
                           className="p-2 rounded-lg transition-colors flex-shrink-0"
                           style={{
-                            background: 'rgba(236, 72, 153, 0.1)',
-                            color: 'var(--neon-pink)',
+                            background: 'var(--error-bg)',
+                            color: 'var(--error)',
                           }}
                           whileHover={{
-                            background: 'rgba(236, 72, 153, 0.2)',
-                            scale: 1.1,
+                            background: 'var(--error-bg)',
                           }}
                           whileTap={{ scale: 0.95 }}
                           title="파일 삭제"
@@ -265,23 +264,17 @@ export function ScreenDesignsClient({ initialDesigns }: ScreenDesignsClientProps
           </p>
         </div>
 
-        <motion.button
+        <button
           onClick={() => setIsUploadModalOpen(true)}
-          className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium"
+          className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium transition-colors"
           style={{
-            background: 'linear-gradient(135deg, var(--neon-cyan), var(--neon-purple))',
-            color: 'var(--bg-primary)',
-            boxShadow: '0 0 20px rgba(0, 245, 255, 0.3)',
+            background: 'var(--accent)',
+            color: 'white',
           }}
-          whileHover={{
-            scale: 1.05,
-            boxShadow: '0 0 30px rgba(0, 245, 255, 0.5)',
-          }}
-          whileTap={{ scale: 0.95 }}
         >
           <Upload className="w-5 h-5" />
           <span>업로드</span>
-        </motion.button>
+        </button>
       </div>
 
       {/* Content */}
@@ -295,11 +288,11 @@ export function ScreenDesignsClient({ initialDesigns }: ScreenDesignsClientProps
               transition={{ delay: 0.2 }}
               className="w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center"
               style={{
-                background: 'rgba(0, 245, 255, 0.1)',
-                border: '1px dashed var(--neon-cyan)',
+                background: 'var(--accent-bg)',
+                border: '1px dashed var(--accent)',
               }}
             >
-              <FileText className="w-10 h-10" style={{ color: 'var(--neon-cyan)' }} />
+              <FileText className="w-10 h-10" style={{ color: 'var(--accent)' }} />
             </motion.div>
             <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
               등록된 화면설계서가 없습니다
@@ -307,20 +300,18 @@ export function ScreenDesignsClient({ initialDesigns }: ScreenDesignsClientProps
             <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
               우측 상단의 업로드 버튼을 클릭하여 첫 번째 문서를 등록해보세요
             </p>
-            <motion.button
+            <button
               onClick={() => setIsUploadModalOpen(true)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium transition-colors"
               style={{
-                background: 'rgba(0, 245, 255, 0.1)',
-                border: '1px solid var(--neon-cyan)',
-                color: 'var(--neon-cyan)',
+                background: 'var(--accent-bg)',
+                border: '1px solid var(--accent)',
+                color: 'var(--accent)',
               }}
-              whileHover={{ scale: 1.05, background: 'rgba(0, 245, 255, 0.2)' }}
-              whileTap={{ scale: 0.95 }}
             >
               <Upload className="w-4 h-4" />
               첫 문서 업로드하기
-            </motion.button>
+            </button>
           </div>
         ) : (
           /* Table */
@@ -330,8 +321,8 @@ export function ScreenDesignsClient({ initialDesigns }: ScreenDesignsClientProps
               <thead>
                 <tr
                   style={{
-                    background: 'rgba(0, 245, 255, 0.05)',
-                    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: 'var(--bg-secondary)',
+                    borderBottom: '1px solid var(--border)',
                   }}
                 >
                   <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: 'var(--text-secondary)', width: '80px' }}>
@@ -363,10 +354,10 @@ export function ScreenDesignsClient({ initialDesigns }: ScreenDesignsClientProps
                     transition={{ delay: index * 0.05 }}
                     className="group transition-colors"
                     style={{
-                      borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                      borderBottom: '1px solid var(--border)',
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'rgba(0, 245, 255, 0.03)'
+                      e.currentTarget.style.background = 'var(--bg-secondary)'
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.background = 'transparent'
@@ -376,8 +367,8 @@ export function ScreenDesignsClient({ initialDesigns }: ScreenDesignsClientProps
                       <span
                         className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm font-mono"
                         style={{
-                          background: 'rgba(0, 245, 255, 0.1)',
-                          color: 'var(--neon-cyan)',
+                          background: 'var(--accent-bg)',
+                          color: 'var(--accent)',
                         }}
                       >
                         {initialDesigns.length - index}
@@ -386,7 +377,7 @@ export function ScreenDesignsClient({ initialDesigns }: ScreenDesignsClientProps
                     <td className="px-6 py-4">
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-2">
-                          <FileText className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--neon-purple)' }} />
+                          <FileText className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--accent)' }} />
                           <span className="font-medium truncate" style={{ color: 'var(--text-primary)' }}>
                             {post.title}
                           </span>
@@ -413,24 +404,18 @@ export function ScreenDesignsClient({ initialDesigns }: ScreenDesignsClientProps
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-center">
-                        <motion.button
+                        <button
                           onClick={() => handleDelete(post.id, post.title)}
-                          className="inline-flex items-center justify-center w-10 h-10 rounded-lg transition-all"
+                          className="inline-flex items-center justify-center w-10 h-10 rounded-lg transition-colors hover:opacity-80"
                           style={{
-                            background: 'rgba(236, 72, 153, 0.1)',
-                            border: '1px solid rgba(236, 72, 153, 0.3)',
-                            color: 'var(--neon-pink)',
+                            background: 'var(--error-bg)',
+                            border: '1px solid var(--error)',
+                            color: 'var(--error)',
                           }}
-                          whileHover={{
-                            scale: 1.1,
-                            background: 'rgba(236, 72, 153, 0.2)',
-                            boxShadow: '0 0 15px rgba(236, 72, 153, 0.3)',
-                          }}
-                          whileTap={{ scale: 0.95 }}
                           title="삭제"
                         >
                           <Trash2 className="w-5 h-5" />
-                        </motion.button>
+                        </button>
                       </div>
                     </td>
                   </motion.tr>
@@ -448,8 +433,8 @@ export function ScreenDesignsClient({ initialDesigns }: ScreenDesignsClientProps
                   transition={{ delay: index * 0.05 }}
                   className="p-4 rounded-xl"
                   style={{
-                    background: 'rgba(255, 255, 255, 0.02)',
-                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                    background: 'var(--bg-secondary)',
+                    border: '1px solid var(--border)',
                   }}
                 >
                   <div className="flex items-start justify-between gap-3 mb-3">
@@ -457,15 +442,15 @@ export function ScreenDesignsClient({ initialDesigns }: ScreenDesignsClientProps
                       <span
                         className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm font-mono flex-shrink-0"
                         style={{
-                          background: 'rgba(0, 245, 255, 0.1)',
-                          color: 'var(--neon-cyan)',
+                          background: 'var(--accent-bg)',
+                          color: 'var(--accent)',
                         }}
                       >
                         {initialDesigns.length - index}
                       </span>
                       <div className="flex flex-col min-w-0">
                         <div className="flex items-center gap-2">
-                          <FileText className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--neon-purple)' }} />
+                          <FileText className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--accent)' }} />
                           <span className="font-medium truncate" style={{ color: 'var(--text-primary)' }}>
                             {post.title}
                           </span>
@@ -477,19 +462,17 @@ export function ScreenDesignsClient({ initialDesigns }: ScreenDesignsClientProps
                         )}
                       </div>
                     </div>
-                    <motion.button
+                    <button
                       onClick={() => handleDelete(post.id, post.title)}
-                      className="inline-flex items-center justify-center w-10 h-10 rounded-lg flex-shrink-0"
+                      className="inline-flex items-center justify-center w-10 h-10 rounded-lg flex-shrink-0 transition-colors hover:opacity-80"
                       style={{
-                        background: 'rgba(236, 72, 153, 0.1)',
-                        border: '1px solid rgba(236, 72, 153, 0.3)',
-                        color: 'var(--neon-pink)',
+                        background: 'var(--error-bg)',
+                        border: '1px solid var(--error)',
+                        color: 'var(--error)',
                       }}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
                     >
                       <Trash2 className="w-5 h-5" />
-                    </motion.button>
+                    </button>
                   </div>
 
                   {/* File download section */}
@@ -523,7 +506,7 @@ export function ScreenDesignsClient({ initialDesigns }: ScreenDesignsClientProps
           className="mt-4 text-sm text-center"
           style={{ color: 'var(--text-muted)' }}
         >
-          총 <span className="font-mono" style={{ color: 'var(--neon-cyan)' }}>{initialDesigns.length}</span>개의 게시물
+          총 <span className="font-mono" style={{ color: 'var(--accent)' }}>{initialDesigns.length}</span>개의 게시물
         </motion.div>
       )}
 

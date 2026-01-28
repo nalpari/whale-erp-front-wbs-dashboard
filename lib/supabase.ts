@@ -12,15 +12,15 @@ export const TASK_STATUS_LIST: TaskStatus[] = ['대기중', '진행중', '완료
 export const getStatusColor = (status: TaskStatus): string => {
   switch (status) {
     case '완료':
-      return 'var(--neon-green)'
+      return 'var(--success)'
     case '진행중':
-      return 'var(--neon-cyan)'
+      return 'var(--accent)'
     case '대기중':
       return 'var(--text-muted)'
     case '이슈':
-      return 'var(--neon-orange)'
+      return 'var(--warning)'
     case '버그':
-      return 'var(--neon-pink)'
+      return 'var(--error)'
     default:
       return 'var(--text-muted)'
   }

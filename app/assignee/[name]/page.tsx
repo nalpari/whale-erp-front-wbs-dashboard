@@ -14,10 +14,10 @@ export const revalidate = 60
 type GlowColor = 'cyan' | 'magenta' | 'purple' | 'pink' | 'green' | 'orange' | 'blue'
 
 const ASSIGNEE_COLORS: Record<string, { color: string; glow: GlowColor }> = {
-  '유상욱': { color: '#00f5ff', glow: 'cyan' },
-  '최효준': { color: '#a855f7', glow: 'purple' },
-  '김다영': { color: '#ff00ff', glow: 'magenta' },
-  '김다슬': { color: '#ec4899', glow: 'pink' },
+  '유상욱': { color: 'var(--chart-1)', glow: 'cyan' },
+  '최효준': { color: 'var(--chart-2)', glow: 'purple' },
+  '김다영': { color: 'var(--chart-3)', glow: 'magenta' },
+  '김다슬': { color: 'var(--chart-4)', glow: 'pink' },
 }
 
 interface PageProps {
@@ -34,7 +34,7 @@ export default async function AssigneePage({ params }: PageProps) {
     notFound()
   }
 
-  const colorConfig = ASSIGNEE_COLORS[decodedName] || { color: '#3b82f6', glow: 'blue' as GlowColor }
+  const colorConfig = ASSIGNEE_COLORS[decodedName] || { color: 'var(--accent)', glow: 'blue' as GlowColor }
 
   const total = tasks.length
   const completed = tasks.filter(t => t.progress === 100).length
@@ -102,10 +102,9 @@ export default async function AssigneePage({ params }: PageProps) {
               <div
                 className="w-24 h-24 rounded-2xl flex items-center justify-center mb-6 text-4xl font-bold"
                 style={{
-                  background: `linear-gradient(135deg, ${colorConfig.color}30, ${colorConfig.color}10)`,
-                  border: `2px solid ${colorConfig.color}50`,
-                  color: colorConfig.color,
-                  boxShadow: `0 0 40px ${colorConfig.color}30`,
+                  background: 'var(--accent-bg)',
+                  border: '2px solid var(--accent)',
+                  color: 'var(--accent)',
                 }}
               >
                 {decodedName.charAt(0)}
@@ -113,7 +112,7 @@ export default async function AssigneePage({ params }: PageProps) {
 
               <h1
                 className="text-3xl font-bold mb-2"
-                style={{ color: colorConfig.color }}
+                style={{ color: 'var(--text-primary)' }}
               >
                 {decodedName}
               </h1>
@@ -136,12 +135,12 @@ export default async function AssigneePage({ params }: PageProps) {
           {/* Stats Grid */}
           <div className="lg:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-4">
             {[
-              { label: '전체', value: total, icon: ListTodo, color: colorConfig.color },
-              { label: '완료', value: completed, icon: CheckCircle2, color: 'var(--neon-green)' },
-              { label: '진행 중', value: inProgress, icon: Clock, color: 'var(--neon-cyan)' },
+              { label: '전체', value: total, icon: ListTodo, color: 'var(--accent)' },
+              { label: '완료', value: completed, icon: CheckCircle2, color: 'var(--success)' },
+              { label: '진행 중', value: inProgress, icon: Clock, color: 'var(--info)' },
               { label: '대기', value: pending, icon: Calendar, color: 'var(--text-muted)' },
-              { label: '이슈', value: issues, icon: AlertTriangle, color: 'var(--neon-orange)' },
-              { label: '버그', value: bugs, icon: Bug, color: 'var(--neon-pink)' },
+              { label: '이슈', value: issues, icon: AlertTriangle, color: 'var(--warning)' },
+              { label: '버그', value: bugs, icon: Bug, color: 'var(--error)' },
             ].map((stat, index) => (
               <GlowCard
                 key={stat.label}
@@ -198,8 +197,8 @@ export default async function AssigneePage({ params }: PageProps) {
                       key={task.id}
                       className="p-4 rounded-xl"
                       style={{
-                        background: 'rgba(255, 255, 255, 0.02)',
-                        border: `1px solid ${isOverdue ? 'var(--neon-pink)' : isUrgent ? 'var(--neon-orange)' : 'rgba(255, 255, 255, 0.1)'}30`,
+                        background: 'var(--bg-secondary)',
+                        border: `1px solid ${isOverdue ? 'var(--error)' : isUrgent ? 'var(--warning)' : 'var(--border)'}`,
                       }}
                     >
                       <div className="flex items-start justify-between gap-4">
@@ -215,7 +214,7 @@ export default async function AssigneePage({ params }: PageProps) {
                           <p
                             className="text-sm font-mono font-bold"
                             style={{
-                              color: isOverdue ? 'var(--neon-pink)' : isUrgent ? 'var(--neon-orange)' : 'var(--text-secondary)',
+                              color: isOverdue ? 'var(--error)' : isUrgent ? 'var(--warning)' : 'var(--text-secondary)',
                             }}
                           >
                             {isOverdue ? `${Math.abs(daysLeft)}일 지남` : `D-${daysLeft}`}

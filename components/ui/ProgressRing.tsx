@@ -19,8 +19,8 @@ export function ProgressRing({
   progress,
   size = 120,
   strokeWidth = 8,
-  color = 'var(--neon-cyan)',
-  bgColor = 'rgba(255, 255, 255, 0.1)',
+  color = 'var(--accent)',
+  bgColor = 'var(--border)',
   showPercentage = true,
   className = '',
   label,
@@ -50,52 +50,20 @@ export function ProgressRing({
           strokeWidth={strokeWidth}
         />
 
-        {/* Gradient definition */}
-        <defs>
-          <linearGradient id={`gradient-${progress}`} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="var(--neon-cyan)" />
-            <stop offset="100%" stopColor="var(--neon-purple)" />
-          </linearGradient>
-
-          {/* Glow filter */}
-          <filter id={`glow-${progress}`} x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-
         {/* Progress circle */}
         <motion.circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke={`url(#gradient-${progress})`}
+          stroke={color}
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
           initial={{ strokeDashoffset: circumference }}
           animate={isInView ? { strokeDashoffset: offset } : {}}
-          transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
-          filter={`url(#glow-${progress})`}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
         />
-
-        {/* Animated dot at the end */}
-        {progress > 0 && (
-          <motion.circle
-            cx={size / 2 + radius * Math.cos((progress / 100) * 2 * Math.PI - Math.PI / 2)}
-            cy={size / 2 + radius * Math.sin((progress / 100) * 2 * Math.PI - Math.PI / 2)}
-            r={strokeWidth / 2 + 2}
-            fill="var(--neon-cyan)"
-            initial={{ scale: 0 }}
-            animate={isInView ? { scale: 1 } : {}}
-            transition={{ duration: 0.3, delay: 1.5 }}
-            filter={`url(#glow-${progress})`}
-          />
-        )}
       </svg>
 
       {/* Center content */}
@@ -105,7 +73,7 @@ export function ProgressRing({
             value={progress}
             suffix="%"
             className="text-2xl font-bold font-mono"
-            style={{ color }}
+            style={{ color: 'var(--text-primary)' }}
           />
           {label && (
             <span className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
@@ -158,7 +126,7 @@ export function MultiProgressRing({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="rgba(255, 255, 255, 0.05)"
+          stroke="var(--border)"
           strokeWidth={strokeWidth}
         />
 
@@ -181,10 +149,7 @@ export function MultiProgressRing({
               strokeDashoffset={-offset}
               initial={{ opacity: 0 }}
               animate={isInView ? { opacity: 1 } : {}}
-              transition={{ duration: 0.5, delay: index * 0.2 }}
-              style={{
-                filter: `drop-shadow(0 0 6px ${segment.color})`,
-              }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
             />
           )
         })}
@@ -194,7 +159,8 @@ export function MultiProgressRing({
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <AnimatedCounter
           value={total}
-          className="text-3xl font-bold font-mono gradient-text"
+          className="text-3xl font-bold font-mono"
+          style={{ color: 'var(--text-primary)' }}
         />
         <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
           Total Tasks
