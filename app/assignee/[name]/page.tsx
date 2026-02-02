@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getTasksByAssignee } from '@/lib/supabase'
+import { getAssigneeColorConfig } from '@/lib/assignee-colors'
 import { Header } from '@/components/layout/Header'
 import { GlowCard } from '@/components/ui/GlowCard'
 import { ProgressRing } from '@/components/ui/ProgressRing'
@@ -10,15 +11,6 @@ import { AssigneeCategoryChart } from './AssigneeCategoryChart'
 import { ArrowLeft, CheckCircle2, Clock, ListTodo, Calendar, AlertTriangle, Bug } from 'lucide-react'
 
 export const revalidate = 60
-
-type GlowColor = 'cyan' | 'magenta' | 'purple' | 'pink' | 'green' | 'orange' | 'blue'
-
-const ASSIGNEE_COLORS: Record<string, { color: string; glow: GlowColor }> = {
-  '유상욱': { color: 'var(--chart-1)', glow: 'cyan' },
-  '최효준': { color: 'var(--chart-2)', glow: 'purple' },
-  '김다영': { color: 'var(--chart-3)', glow: 'magenta' },
-  '김다슬': { color: 'var(--chart-4)', glow: 'pink' },
-}
 
 interface PageProps {
   params: Promise<{ name: string }>
@@ -34,7 +26,7 @@ export default async function AssigneePage({ params }: PageProps) {
     notFound()
   }
 
-  const colorConfig = ASSIGNEE_COLORS[decodedName] || { color: 'var(--accent)', glow: 'blue' as GlowColor }
+  const colorConfig = getAssigneeColorConfig(decodedName)
 
   const total = tasks.length
   const completed = tasks.filter(t => t.progress === 100).length

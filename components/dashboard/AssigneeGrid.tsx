@@ -5,30 +5,18 @@ import { User, ArrowRight } from 'lucide-react'
 import { GlowCard } from '@/components/ui/GlowCard'
 import { ProgressRing } from '@/components/ui/ProgressRing'
 import { AssigneeStats } from '@/lib/supabase'
+import { getAssigneeColorConfig } from '@/lib/assignee-colors'
 
 interface AssigneeGridProps {
   data: AssigneeStats[]
-}
-
-// Simplified color palette using CSS variables
-const CHART_COLORS = [
-  'var(--chart-1)',
-  'var(--chart-2)',
-  'var(--chart-3)',
-  'var(--chart-4)',
-  'var(--chart-5)',
-  'var(--chart-6)',
-]
-
-function getAssigneeColor(index: number) {
-  return CHART_COLORS[index % CHART_COLORS.length]
 }
 
 export function AssigneeGrid({ data }: AssigneeGridProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {data.map((assignee, index) => {
-        const color = getAssigneeColor(index)
+        const colorConfig = getAssigneeColorConfig(assignee.assignee)
+        const color = colorConfig.color
 
         return (
           <Link
