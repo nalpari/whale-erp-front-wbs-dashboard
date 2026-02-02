@@ -70,6 +70,7 @@ export function CategoryBarChart({ data, className = '' }: CategoryBarChartProps
           />
 
           <Tooltip
+            wrapperStyle={{ zIndex: 1000 }}
             cursor={{ fill: 'var(--bg-tertiary)', opacity: 0.5 }}
             content={({ active, payload }) => {
               if (active && payload && payload.length) {

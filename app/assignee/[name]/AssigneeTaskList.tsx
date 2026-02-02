@@ -335,6 +335,7 @@ export function AssigneeTaskList({ tasks, onUpdateField, onDeleteTask }: Assigne
                             </label>
                             <div className="flex items-center gap-4">
                               <input
+                                key={`progress-${task.id}-${task.progress}`}
                                 type="range"
                                 min="0"
                                 max="100"
@@ -382,7 +383,17 @@ export function AssigneeTaskList({ tasks, onUpdateField, onDeleteTask }: Assigne
                             </label>
                             <select
                               value={task.status}
-                              onChange={(e) => handleFieldUpdate(task.id, 'status', e.target.value as TaskStatus)}
+                              onChange={(e) => {
+                                const newStatus = e.target.value as TaskStatus
+                                // 상태에 따라 진행률 자동 변경
+                                if (newStatus === '완료' && task.progress !== 100) {
+                                  onUpdateField?.(task.id, { status: newStatus, progress: 100 })
+                                } else if ((newStatus === '대기중' || newStatus === '버그' || newStatus === '이슈' || newStatus === '취소') && task.progress !== 0) {
+                                  onUpdateField?.(task.id, { status: newStatus, progress: 0 })
+                                } else {
+                                  handleFieldUpdate(task.id, 'status', newStatus)
+                                }
+                              }}
                               className="w-full px-3 py-2 rounded-lg outline-none text-sm cursor-pointer"
                               style={{
                                 background: 'var(--bg-tertiary)',

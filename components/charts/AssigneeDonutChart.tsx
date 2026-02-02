@@ -53,6 +53,7 @@ export function AssigneeDonutChart({ data, className = '' }: AssigneeDonutChartP
           </Pie>
 
           <Tooltip
+            wrapperStyle={{ zIndex: 1000 }}
             content={({ active, payload }) => {
               if (active && payload && payload.length) {
                 const data = payload[0].payload
