@@ -55,6 +55,7 @@ export function CategoryRadialChart({ data, className = '' }: CategoryRadialChar
           />
 
           <Tooltip
+            wrapperStyle={{ zIndex: 1000 }}
             content={({ active, payload }) => {
               if (active && payload && payload.length) {
                 const data = payload[0].payload

@@ -22,6 +22,7 @@ export default async function Home() {
   const pending = tasks.filter(t => t.progress === 0).length
   const issues = tasks.filter(t => t.status === '이슈').length
   const bugs = tasks.filter(t => t.status === '버그').length
+  const cancelled = tasks.filter(t => t.status === '취소').length
   const overallProgress = total > 0
     ? Math.round(tasks.reduce((sum, t) => sum + t.progress, 0) / total)
     : 0
@@ -43,6 +44,7 @@ export default async function Home() {
             pending={pending}
             issues={issues}
             bugs={bugs}
+            cancelled={cancelled}
             overallProgress={overallProgress}
           />
         </section>

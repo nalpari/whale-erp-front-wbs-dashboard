@@ -17,8 +17,6 @@ interface AssigneeCategoryChartProps {
 }
 
 export function AssigneeCategoryChart({ data }: AssigneeCategoryChartProps) {
-  const maxTotal = Math.max(...data.map(d => d.total))
-
   return (
     <div className="space-y-4">
       {data.map((item, index) => (
@@ -54,33 +52,32 @@ export function AssigneeCategoryChart({ data }: AssigneeCategoryChartProps) {
 
           {/* Progress Bar */}
           <div className="relative h-8 rounded-lg overflow-hidden" style={{ background: 'var(--bg-tertiary)' }}>
-            {/* Background bar (total tasks relative to max) */}
-            <motion.div
-              className="absolute inset-y-0 left-0 rounded-lg"
-              style={{ background: 'var(--bg-secondary)' }}
-              initial={{ width: 0 }}
-              animate={{ width: `${(item.total / maxTotal) * 100}%` }}
-              transition={{ duration: 0.8, delay: index * 0.1 }}
-            />
-
-            {/* Progress bar */}
+            {/* Progress bar - shows actual progress percentage */}
             <motion.div
               className="absolute inset-y-0 left-0 rounded-lg"
               style={{
-                background: item.progress === 100 ? 'var(--success)' : 'var(--accent)',
+                background: item.progress === 100
+                  ? 'var(--color-success)'
+                  : 'var(--accent-primary)',
               }}
               initial={{ width: 0 }}
-              animate={{ width: `${(item.total / maxTotal) * (item.progress / 100) * 100}%` }}
-              transition={{ duration: 1, delay: index * 0.1 + 0.3 }}
+              animate={{ width: `${item.progress}%` }}
+              transition={{ duration: 1, delay: index * 0.1 }}
             />
 
-            {/* Task count inside bar */}
-            <div className="absolute inset-0 flex items-center px-3">
+            {/* Task count and progress inside bar */}
+            <div className="absolute inset-0 flex items-center justify-between px-3">
               <span
                 className="text-xs font-mono font-bold"
                 style={{ color: 'rgba(255, 255, 255, 0.9)' }}
               >
                 {item.total}개
+              </span>
+              <span
+                className="text-xs font-mono"
+                style={{ color: 'rgba(255, 255, 255, 0.7)' }}
+              >
+                {item.completed}/{item.total} 완료
               </span>
             </div>
           </div>

@@ -5,9 +5,9 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-export type TaskStatus = '대기중' | '진행중' | '완료' | '이슈' | '버그'
+export type TaskStatus = '대기중' | '진행중' | '완료' | '이슈' | '버그' | '취소'
 
-export const TASK_STATUS_LIST: TaskStatus[] = ['대기중', '진행중', '완료', '이슈', '버그']
+export const TASK_STATUS_LIST: TaskStatus[] = ['대기중', '진행중', '완료', '이슈', '버그', '취소']
 
 export const getStatusColor = (status: TaskStatus): string => {
   switch (status) {
@@ -21,6 +21,8 @@ export const getStatusColor = (status: TaskStatus): string => {
       return 'var(--warning)'
     case '버그':
       return 'var(--error)'
+    case '취소':
+      return 'var(--text-secondary)'
     default:
       return 'var(--text-muted)'
   }
