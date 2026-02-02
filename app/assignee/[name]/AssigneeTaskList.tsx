@@ -73,6 +73,10 @@ export function AssigneeTaskList({ tasks, onUpdateField, onDeleteTask }: Assigne
     }
   }, [handleFieldUpdate])
 
+  const handleDateClick = useCallback((e: React.MouseEvent<HTMLInputElement>) => {
+    e.currentTarget.showPicker?.()
+  }, [])
+
   const handleDelete = async (task: Task, e: React.MouseEvent) => {
     e.stopPropagation()
     if (!onDeleteTask) return
@@ -424,6 +428,7 @@ export function AssigneeTaskList({ tasks, onUpdateField, onDeleteTask }: Assigne
                                 defaultValue={task.start_date ? task.start_date.split('T')[0] : ''}
                                 onChange={(e) => handleFieldUpdate(task.id, 'start_date', e.target.value || null)}
                                 onKeyDown={(e) => handleInputKeyDown(e, task.id, 'start_date', (e.target as HTMLInputElement).value || null)}
+                                onClick={handleDateClick}
                                 className="w-full px-3 py-2 rounded-lg outline-none text-sm"
                                 style={{
                                   background: 'var(--bg-tertiary)',
@@ -445,6 +450,7 @@ export function AssigneeTaskList({ tasks, onUpdateField, onDeleteTask }: Assigne
                                 defaultValue={task.due_date ? task.due_date.split('T')[0] : ''}
                                 onChange={(e) => handleFieldUpdate(task.id, 'due_date', e.target.value || null)}
                                 onKeyDown={(e) => handleInputKeyDown(e, task.id, 'due_date', (e.target as HTMLInputElement).value || null)}
+                                onClick={handleDateClick}
                                 className="w-full px-3 py-2 rounded-lg outline-none text-sm"
                                 style={{
                                   background: 'var(--bg-tertiary)',

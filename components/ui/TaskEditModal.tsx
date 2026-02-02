@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { X, Calendar, CalendarDays, Percent, Loader2, Flag, LayoutGrid } from 'lucide-react'
 import { Task, TaskStatus, TASK_STATUS_LIST } from '@/lib/supabase'
@@ -91,6 +91,10 @@ export function TaskEditModal({ task, isOpen, onClose, onSave, anchorRect }: Tas
     border: '1px solid var(--border)',
     color: 'var(--text-primary)',
   }
+
+  const handleDateClick = useCallback((e: React.MouseEvent<HTMLInputElement>) => {
+    e.currentTarget.showPicker?.()
+  }, [])
 
   return (
     <AnimatePresence>
@@ -232,6 +236,7 @@ export function TaskEditModal({ task, isOpen, onClose, onSave, anchorRect }: Tas
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
+                    onClick={handleDateClick}
                     className="w-full px-4 py-3 rounded-lg outline-none transition-all focus:ring-2 focus:ring-[var(--accent)]"
                     style={inputStyle}
                   />
@@ -247,6 +252,7 @@ export function TaskEditModal({ task, isOpen, onClose, onSave, anchorRect }: Tas
                     type="date"
                     value={dueDate}
                     onChange={(e) => setDueDate(e.target.value)}
+                    onClick={handleDateClick}
                     className="w-full px-4 py-3 rounded-lg outline-none transition-all focus:ring-2 focus:ring-[var(--accent)]"
                     style={inputStyle}
                   />
