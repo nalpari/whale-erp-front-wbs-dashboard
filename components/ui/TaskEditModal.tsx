@@ -193,7 +193,7 @@ export function TaskEditModal({ task, isOpen, onClose, onSave, anchorRect }: Tas
                     // 상태에 따라 진행률 자동 변경
                     if (newStatus === '완료') {
                       setProgress(100)
-                    } else if (newStatus === '대기중' || newStatus === '버그' || newStatus === '이슈' || newStatus === '취소') {
+                    } else if (newStatus === '대기중' || newStatus === '버그' || newStatus === '이슈') {
                       setProgress(0)
                     }
                   }}
