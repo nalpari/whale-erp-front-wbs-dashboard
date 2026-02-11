@@ -392,7 +392,7 @@ export function AssigneeTaskList({ tasks, onUpdateField, onDeleteTask }: Assigne
                                 // 상태에 따라 진행률 자동 변경
                                 if (newStatus === '완료' && task.progress !== 100) {
                                   onUpdateField?.(task.id, { status: newStatus, progress: 100 })
-                                } else if ((newStatus === '대기중' || newStatus === '버그' || newStatus === '이슈' || newStatus === '취소') && task.progress !== 0) {
+                                } else if ((newStatus === '대기중' || newStatus === '버그' || newStatus === '이슈') && task.progress !== 0) {
                                   onUpdateField?.(task.id, { status: newStatus, progress: 0 })
                                 } else {
                                   handleFieldUpdate(task.id, 'status', newStatus)
