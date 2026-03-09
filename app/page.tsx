@@ -16,15 +16,16 @@ export default async function Home() {
     getAssigneeStats(),
   ])
 
-  const total = tasks.length
-  const completed = tasks.filter(t => t.progress === 100).length
-  const inProgress = tasks.filter(t => t.progress > 0 && t.progress < 100).length
-  const pending = tasks.filter(t => t.progress === 0).length
-  const issues = tasks.filter(t => t.status === '이슈').length
-  const bugs = tasks.filter(t => t.status === '버그').length
+  const activeTasks = tasks.filter(t => t.status !== '취소')
+  const total = activeTasks.length
+  const completed = activeTasks.filter(t => t.progress === 100).length
+  const inProgress = activeTasks.filter(t => t.progress > 0 && t.progress < 100).length
+  const pending = activeTasks.filter(t => t.progress === 0).length
+  const issues = activeTasks.filter(t => t.status === '이슈').length
+  const bugs = activeTasks.filter(t => t.status === '버그').length
   const cancelled = tasks.filter(t => t.status === '취소').length
   const overallProgress = total > 0
-    ? Math.round(tasks.reduce((sum, t) => sum + t.progress, 0) / total)
+    ? Math.round(activeTasks.reduce((sum, t) => sum + t.progress, 0) / total)
     : 0
 
   return (

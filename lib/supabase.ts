@@ -97,7 +97,8 @@ export interface CategoryStats {
 }
 
 export async function getCategoryStats(): Promise<CategoryStats[]> {
-  const tasks = await getTasks()
+  const allTasks = await getTasks()
+  const tasks = allTasks.filter(t => t.status !== '취소')
   const categories = [...new Set(tasks.map(t => t.category))]
 
   return categories.map(category => {
@@ -123,7 +124,8 @@ export interface AssigneeStats {
 }
 
 export async function getAssigneeStats(): Promise<AssigneeStats[]> {
-  const tasks = await getTasks()
+  const allTasks = await getTasks()
+  const tasks = allTasks.filter(t => t.status !== '취소')
   const assignees = [...new Set(tasks.map(t => t.assignee).filter(Boolean))] as string[]
 
   return assignees.map(assignee => {
@@ -149,6 +151,7 @@ export interface UpdateTaskInput {
   description?: string | null
   task_title?: string
   category?: string
+  assignee?: string | null
 }
 
 export async function updateTask(taskId: number, updates: UpdateTaskInput): Promise<Task> {
