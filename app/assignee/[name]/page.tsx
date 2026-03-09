@@ -28,20 +28,21 @@ export default async function AssigneePage({ params }: PageProps) {
 
   const colorConfig = getAssigneeColorConfig(decodedName)
 
-  const total = tasks.length
-  const completed = tasks.filter(t => t.progress === 100).length
-  const inProgress = tasks.filter(t => t.progress > 0 && t.progress < 100).length
-  const pending = tasks.filter(t => t.progress === 0).length
-  const issues = tasks.filter(t => t.status === '이슈').length
-  const bugs = tasks.filter(t => t.status === '버그').length
+  const activeTasks = tasks.filter(t => t.status !== '취소')
+  const total = activeTasks.length
+  const completed = activeTasks.filter(t => t.progress === 100).length
+  const inProgress = activeTasks.filter(t => t.progress > 0 && t.progress < 100).length
+  const pending = activeTasks.filter(t => t.progress === 0).length
+  const issues = activeTasks.filter(t => t.status === '이슈').length
+  const bugs = activeTasks.filter(t => t.status === '버그').length
   const overallProgress = total > 0
-    ? Math.round(tasks.reduce((sum, t) => sum + t.progress, 0) / total)
+    ? Math.round(activeTasks.reduce((sum, t) => sum + t.progress, 0) / total)
     : 0
 
-  // Group tasks by category
-  const categories = [...new Set(tasks.map(t => t.category))]
+  // Group tasks by category (excluding cancelled)
+  const categories = [...new Set(activeTasks.map(t => t.category))]
   const categoryData = categories.map(cat => {
-    const catTasks = tasks.filter(t => t.category === cat)
+    const catTasks = activeTasks.filter(t => t.category === cat)
     return {
       category: cat,
       total: catTasks.length,
