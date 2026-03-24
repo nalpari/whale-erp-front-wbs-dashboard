@@ -44,8 +44,18 @@ export function TaskCreateModal({ isOpen, onClose, onSuccess }: TaskCreateModalP
 
   useEffect(() => {
     if (isOpen) {
-      getCategories().then(setCategories).catch(() => {})
-      getAssignees().then(setAssignees).catch(() => {})
+      getCategories()
+        .then(setCategories)
+        .catch((err) => {
+          console.error('카테고리 목록 로드 실패:', err)
+          setError('카테고리 목록을 불러오지 못했습니다. 페이지를 새로고침해주세요.')
+        })
+      getAssignees()
+        .then(setAssignees)
+        .catch((err) => {
+          console.error('담당자 목록 로드 실패:', err)
+          setError('담당자 목록을 불러오지 못했습니다. 페이지를 새로고침해주세요.')
+        })
     }
   }, [isOpen])
 

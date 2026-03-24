@@ -598,9 +598,20 @@ export async function deleteScreenDesign(id: number): Promise<void> {
 }
 
 // ─── Task Description Image Upload ──────────────────────────
+// screen-designs 버킷의 task-images/ 경로를 재사용 (별도 버킷 미생성)
+
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB
 
 export async function uploadTaskImage(file: File): Promise<string> {
-  const ext = file.name.split('.').pop() || 'png'
+  if (!file.type.startsWith('image/')) {
+    throw new Error('이미지 파일만 업로드 가능합니다')
+  }
+  if (file.size > MAX_IMAGE_SIZE) {
+    throw new Error('파일 크기는 5MB 이하여야 합니다')
+  }
+
+  const parts = file.name.split('.')
+  const ext = parts.length > 1 ? parts.pop() : 'png'
   const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
   const filePath = `task-images/${fileName}`
 

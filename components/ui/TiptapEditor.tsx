@@ -56,6 +56,7 @@ function ToolbarButton({
   )
 }
 
+// 개별 파일 업로드 실패 시 해당 파일만 건너뛰고 나머지 계속 처리
 async function handleImageFiles(files: File[], insertImage: (url: string) => void) {
   const imageFiles = files.filter((f) => f.type.startsWith('image/'))
   for (const file of imageFiles) {
@@ -63,7 +64,8 @@ async function handleImageFiles(files: File[], insertImage: (url: string) => voi
       const url = await uploadTaskImage(file)
       insertImage(url)
     } catch (err) {
-      console.error('이미지 업로드 실패:', err)
+      console.error('이미지 업로드 실패:', file.name, err)
+      alert(`이미지 업로드에 실패했습니다: ${file.name}`)
     }
   }
 }
