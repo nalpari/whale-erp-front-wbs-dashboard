@@ -118,11 +118,13 @@ export function TiptapEditor({ content = '', onChange, placeholder }: TiptapEdit
         if (imageFiles.length === 0) return false
 
         event.preventDefault()
-        const pos = view.posAtCoords({ left: event.clientX, top: event.clientY })
+        const coords = view.posAtCoords({ left: event.clientX, top: event.clientY })
+        let insertPos = coords?.pos ?? view.state.selection.from
         handleImageFiles(imageFiles, (url) => {
           const node = view.state.schema.nodes.image.create({ src: url })
-          const tr = view.state.tr.insert(pos?.pos ?? view.state.selection.from, node)
+          const tr = view.state.tr.insert(insertPos, node)
           view.dispatch(tr)
+          insertPos += node.nodeSize
         })
         return true
       },
