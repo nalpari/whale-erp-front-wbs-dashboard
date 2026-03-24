@@ -16,6 +16,7 @@ import {
   LayoutGrid,
 } from 'lucide-react'
 import { createTask, CreateTaskInput, TASK_STATUS_LIST, getCategories, getAssignees } from '@/lib/supabase'
+import { TiptapEditor } from './TiptapEditor'
 
 interface TaskCreateModalProps {
   isOpen: boolean
@@ -229,12 +230,9 @@ export function TaskCreateModal({ isOpen, onClose, onSuccess }: TaskCreateModalP
                   <FileText className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
                   설명
                 </label>
-                <textarea
-                  value={formData.description ?? ''}
-                  onChange={(e) => handleChange('description', e.target.value)}
-                  rows={3}
-                  className="w-full px-4 py-3 rounded-lg outline-none transition-all focus:ring-2 focus:ring-[var(--accent)] resize-none"
-                  style={inputStyle}
+                <TiptapEditor
+                  content={formData.description ?? ''}
+                  onChange={(html) => handleChange('description', html)}
                   placeholder="태스크에 대한 상세 설명 (선택사항)"
                 />
               </div>

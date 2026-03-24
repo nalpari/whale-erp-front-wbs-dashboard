@@ -585,3 +585,23 @@ export async function deleteScreenDesign(id: number): Promise<void> {
 
   if (deleteError) throw deleteError
 }
+
+// ─── Task Description Image Upload ──────────────────────────
+
+export async function uploadTaskImage(file: File): Promise<string> {
+  const ext = file.name.split('.').pop() || 'png'
+  const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
+  const filePath = `task-images/${fileName}`
+
+  const { error: uploadError } = await supabase.storage
+    .from('screen-designs')
+    .upload(filePath, file)
+
+  if (uploadError) throw uploadError
+
+  const { data: urlData } = supabase.storage
+    .from('screen-designs')
+    .getPublicUrl(filePath)
+
+  return urlData.publicUrl
+}
