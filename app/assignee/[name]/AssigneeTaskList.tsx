@@ -2,7 +2,9 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, ChevronDown, Calendar, CalendarDays, Folder, Loader2, Percent, Trash2, Flag, FileText, LayoutGrid, AlignLeft } from 'lucide-react'
+import { Search, ChevronDown, Calendar, CalendarDays, Folder, Loader2, Percent, Trash2, Flag, FileText, LayoutGrid, AlignLeft, Pencil } from 'lucide-react'
+import DOMPurify from 'dompurify'
+import { TiptapEditor } from '@/components/ui/TiptapEditor'
 import { Task, TaskStatus, TASK_STATUS_LIST, getStatusColor, UpdateTaskInput } from '@/lib/supabase'
 
 interface AssigneeTaskListProps {
@@ -20,6 +22,7 @@ export function AssigneeTaskList({ tasks, onUpdateField, onDeleteTask }: Assigne
   const [isDeletingId, setIsDeletingId] = useState<number | null>(null)
   const [updatingFields, setUpdatingFields] = useState<Record<string, boolean>>({})
   const [error, setError] = useState<string | null>(null)
+  const [editingDescriptionId, setEditingDescriptionId] = useState<number | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
   const categories = [...new Set(tasks.map(t => t.category))]
@@ -300,32 +303,50 @@ export function AssigneeTaskList({ tasks, onUpdateField, onDeleteTask }: Assigne
                               {isFieldUpdating(task.id, 'description') && (
                                 <Loader2 className="w-3 h-3 animate-spin" style={{ color: 'var(--accent)' }} />
                               )}
+                              <button
+                                type="button"
+                                onClick={() => setEditingDescriptionId(
+                                  editingDescriptionId === task.id ? null : task.id
+                                )}
+                                className="ml-auto p-1 rounded transition-colors hover:bg-[var(--bg-tertiary)]"
+                                style={{ color: editingDescriptionId === task.id ? 'var(--accent)' : 'var(--text-muted)' }}
+                                title={editingDescriptionId === task.id ? '편집 닫기' : '설명 편집'}
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
                             </label>
-                            <textarea
-                              defaultValue={task.description || ''}
-                              placeholder="태스크 설명을 입력하세요..."
-                              rows={3}
-                              onBlur={(e) => {
-                                if (e.target.value !== (task.description || '')) {
-                                  handleFieldUpdate(task.id, 'description', e.target.value || null)
-                                }
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter' && !e.shiftKey) {
-                                  e.preventDefault()
-                                  const target = e.target as HTMLTextAreaElement
-                                  if (target.value !== (task.description || '')) {
-                                    handleFieldUpdate(task.id, 'description', target.value || null)
+                            {editingDescriptionId === task.id ? (
+                              <TiptapEditor
+                                content={task.description || ''}
+                                onChange={(html) => {
+                                  if (html !== (task.description || '')) {
+                                    handleFieldUpdate(task.id, 'description', html || null)
                                   }
-                                }
-                              }}
-                              className="w-full px-3 py-2 rounded-lg outline-none text-sm resize-none"
-                              style={{
-                                background: 'var(--bg-tertiary)',
-                                border: '1px solid var(--border)',
-                                color: 'var(--text-primary)',
-                              }}
-                            />
+                                }}
+                                placeholder="태스크 설명을 입력하세요..."
+                              />
+                            ) : task.description ? (
+                              <div
+                                className="tiptap-content px-3 py-2 rounded-lg text-sm"
+                                style={{
+                                  background: 'var(--bg-tertiary)',
+                                  border: '1px solid var(--border)',
+                                  color: 'var(--text-primary)',
+                                }}
+                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(task.description, { ADD_TAGS: ['img'], ADD_ATTR: ['src', 'alt', 'class'] }) }}
+                              />
+                            ) : (
+                              <p
+                                className="px-3 py-2 rounded-lg text-sm"
+                                style={{
+                                  background: 'var(--bg-tertiary)',
+                                  border: '1px solid var(--border)',
+                                  color: 'var(--text-muted)',
+                                }}
+                              >
+                                설명이 없습니다
+                              </p>
+                            )}
                           </div>
 
                           {/* 진행률 */}
