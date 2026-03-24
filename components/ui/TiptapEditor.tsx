@@ -102,6 +102,7 @@ export function TiptapEditor({ content = '', onChange, placeholder }: TiptapEdit
         event.preventDefault()
         const files = imageItems.map((item) => item.getAsFile()).filter(Boolean) as File[]
         handleImageFiles(files, (url) => {
+          if (view.isDestroyed) return
           view.dispatch(
             view.state.tr.replaceSelectionWith(
               view.state.schema.nodes.image.create({ src: url }),
@@ -121,6 +122,7 @@ export function TiptapEditor({ content = '', onChange, placeholder }: TiptapEdit
         const coords = view.posAtCoords({ left: event.clientX, top: event.clientY })
         let insertPos = coords?.pos ?? view.state.selection.from
         handleImageFiles(imageFiles, (url) => {
+          if (view.isDestroyed) return
           const node = view.state.schema.nodes.image.create({ src: url })
           const tr = view.state.tr.insert(insertPos, node)
           view.dispatch(tr)
