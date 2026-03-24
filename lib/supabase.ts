@@ -66,6 +66,17 @@ export async function getTasksByAssignee(assignee: string): Promise<Task[]> {
   return data || []
 }
 
+export async function getTasksByStatus(status: TaskStatus): Promise<Task[]> {
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('*')
+    .eq('status', status)
+    .order('num', { ascending: true })
+
+  if (error) throw error
+  return data || []
+}
+
 export async function getAssignees(): Promise<string[]> {
   const { data, error } = await supabase
     .from('tasks')
@@ -584,4 +595,35 @@ export async function deleteScreenDesign(id: number): Promise<void> {
     .eq('id', id)
 
   if (deleteError) throw deleteError
+}
+
+// ─── Task Description Image Upload ──────────────────────────
+// screen-designs 버킷의 task-images/ 경로를 재사용 (별도 버킷 미생성)
+
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB
+
+export async function uploadTaskImage(file: File): Promise<string> {
+  if (!file.type.startsWith('image/')) {
+    throw new Error('이미지 파일만 업로드 가능합니다')
+  }
+  if (file.size > MAX_IMAGE_SIZE) {
+    throw new Error('파일 크기는 5MB 이하여야 합니다')
+  }
+
+  const parts = file.name.split('.')
+  const ext = parts.length > 1 ? parts.pop() : 'png'
+  const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
+  const filePath = `task-images/${fileName}`
+
+  const { error: uploadError } = await supabase.storage
+    .from('screen-designs')
+    .upload(filePath, file)
+
+  if (uploadError) throw uploadError
+
+  const { data: urlData } = supabase.storage
+    .from('screen-designs')
+    .getPublicUrl(filePath)
+
+  return urlData.publicUrl
 }
