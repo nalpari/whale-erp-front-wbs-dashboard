@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import {
   X,
@@ -15,7 +15,7 @@ import {
   Flag,
   LayoutGrid,
 } from 'lucide-react'
-import { createTask, CreateTaskInput, TASK_STATUS_LIST } from '@/lib/supabase'
+import { createTask, CreateTaskInput, TASK_STATUS_LIST, getCategories, getAssignees } from '@/lib/supabase'
 
 interface TaskCreateModalProps {
   isOpen: boolean
@@ -38,6 +38,15 @@ export function TaskCreateModal({ isOpen, onClose, onSuccess }: TaskCreateModalP
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [categories, setCategories] = useState<string[]>([])
+  const [assignees, setAssignees] = useState<string[]>([])
+
+  useEffect(() => {
+    if (isOpen) {
+      getCategories().then(setCategories).catch(() => {})
+      getAssignees().then(setAssignees).catch(() => {})
+    }
+  }, [isOpen])
 
   const handleChange = (field: keyof CreateTaskInput, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -112,7 +121,7 @@ export function TaskCreateModal({ isOpen, onClose, onSuccess }: TaskCreateModalP
           onClick={handleBackdropClick}
         >
           <div
-            className="w-full max-w-xl rounded-xl overflow-hidden max-h-[90vh] flex flex-col animate-slide-up"
+            className="w-full max-w-[1024px] rounded-xl overflow-hidden max-h-[90vh] flex flex-col animate-slide-up"
             style={{
               background: 'var(--bg-card)',
               border: '1px solid var(--border)',
@@ -175,14 +184,21 @@ export function TaskCreateModal({ isOpen, onClose, onSuccess }: TaskCreateModalP
                   <FolderOpen className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
                   카테고리 <span style={{ color: 'var(--error)' }}>*</span>
                 </label>
-                <input
-                  type="text"
+                <select
                   value={formData.category}
                   onChange={(e) => handleChange('category', e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg outline-none transition-all focus:ring-2 focus:ring-[var(--accent)]"
+                  className="w-full px-4 py-3 rounded-lg outline-none transition-all cursor-pointer focus:ring-2 focus:ring-[var(--accent)]"
                   style={inputStyle}
-                  placeholder="예: 프론트엔드, 백엔드"
-                />
+                >
+                  <option value="" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                    카테고리를 선택하세요
+                  </option>
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat} style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Task Title */}
@@ -232,14 +248,21 @@ export function TaskCreateModal({ isOpen, onClose, onSuccess }: TaskCreateModalP
                   <User className="w-4 h-4" style={{ color: 'var(--success)' }} />
                   담당자
                 </label>
-                <input
-                  type="text"
+                <select
                   value={formData.assignee ?? ''}
                   onChange={(e) => handleChange('assignee', e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg outline-none transition-all focus:ring-2 focus:ring-[var(--accent)]"
+                  className="w-full px-4 py-3 rounded-lg outline-none transition-all cursor-pointer focus:ring-2 focus:ring-[var(--accent)]"
                   style={inputStyle}
-                  placeholder="담당자 이름"
-                />
+                >
+                  <option value="" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                    담당자를 선택하세요
+                  </option>
+                  {assignees.map((name) => (
+                    <option key={name} value={name} style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Date Inputs */}
