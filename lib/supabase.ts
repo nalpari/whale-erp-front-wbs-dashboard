@@ -66,6 +66,17 @@ export async function getTasksByAssignee(assignee: string): Promise<Task[]> {
   return data || []
 }
 
+export async function getTasksByStatus(status: TaskStatus): Promise<Task[]> {
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('*')
+    .eq('status', status)
+    .order('num', { ascending: true })
+
+  if (error) throw error
+  return data || []
+}
+
 export async function getAssignees(): Promise<string[]> {
   const { data, error } = await supabase
     .from('tasks')

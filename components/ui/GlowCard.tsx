@@ -10,6 +10,7 @@ interface GlowCardProps {
   glowColor?: 'cyan' | 'magenta' | 'purple' | 'pink' | 'blue' | 'green' | 'orange'
   delay?: number
   hover?: boolean
+  onClick?: () => void
 }
 
 export function GlowCard({
@@ -17,6 +18,7 @@ export function GlowCard({
   className = '',
   delay = 0,
   hover = true,
+  onClick,
 }: GlowCardProps) {
   return (
     <motion.div
@@ -24,6 +26,7 @@ export function GlowCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay, ease: 'easeOut' }}
       className={`card ${hover ? 'card-hover' : ''} ${className}`}
+      onClick={onClick}
     >
       {children}
     </motion.div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { useRouter } from 'next/navigation'
 import { CheckCircle2, Clock, ListTodo, TrendingUp, AlertTriangle, Bug, XCircle } from 'lucide-react'
 import { GlowCard } from '@/components/ui/GlowCard'
 import { AnimatedCounter } from '@/components/ui/AnimatedCounter'
@@ -25,6 +26,8 @@ export function StatsCards({
   cancelled,
   overallProgress,
 }: StatsCardsProps) {
+  const router = useRouter()
+
   const stats = [
     {
       label: '전체 태스크',
@@ -55,6 +58,7 @@ export function StatsCards({
       value: bugs,
       icon: Bug,
       color: 'var(--error)',
+      href: '/bugs',
     },
     {
       label: '취소',
@@ -77,7 +81,8 @@ export function StatsCards({
         <GlowCard
           key={stat.label}
           delay={index * 0.05}
-          className="p-6"
+          className={`p-6${stat.href ? ' cursor-pointer' : ''}`}
+          {...(stat.href ? { onClick: () => router.push(stat.href) } : {})}
         >
           <div className="flex items-start justify-between">
             <div>
