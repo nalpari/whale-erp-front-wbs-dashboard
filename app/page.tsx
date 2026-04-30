@@ -18,9 +18,9 @@ export default async function Home() {
 
   const activeTasks = tasks.filter(t => t.status !== '취소')
   const total = activeTasks.length
-  const completed = activeTasks.filter(t => t.progress === 100).length
-  const inProgress = activeTasks.filter(t => t.progress > 0 && t.progress < 100).length
-  const pending = activeTasks.filter(t => t.progress === 0).length
+  const completed = activeTasks.filter(t => t.status === '완료').length
+  const inProgress = activeTasks.filter(t => t.status === '진행중').length
+  const pending = activeTasks.filter(t => t.status === '대기중').length
   const issues = activeTasks.filter(t => t.status === '이슈').length
   const bugs = activeTasks.filter(t => t.status === '버그').length
   const cancelled = tasks.filter(t => t.status === '취소').length
