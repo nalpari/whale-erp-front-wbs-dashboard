@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
-import { CheckCircle2, Clock, ListTodo, TrendingUp, AlertTriangle, Bug, XCircle } from 'lucide-react'
+import { CheckCircle2, Clock, ListTodo, TrendingUp, AlertTriangle, Bug, XCircle, PauseCircle } from 'lucide-react'
 import { GlowCard } from '@/components/ui/GlowCard'
 import { AnimatedCounter } from '@/components/ui/AnimatedCounter'
 
@@ -21,6 +21,7 @@ export function StatsCards({
   total,
   completed,
   inProgress,
+  pending,
   issues,
   bugs,
   cancelled,
@@ -40,18 +41,28 @@ export function StatsCards({
       value: completed,
       icon: CheckCircle2,
       color: 'var(--success)',
+      href: '/tasks/completed',
     },
     {
       label: '진행 중',
       value: inProgress,
       icon: Clock,
       color: 'var(--warning)',
+      href: '/tasks/in-progress',
+    },
+    {
+      label: '대기 중',
+      value: pending,
+      icon: PauseCircle,
+      color: 'var(--text-muted)',
+      href: '/tasks/pending',
     },
     {
       label: '이슈',
       value: issues,
       icon: AlertTriangle,
       color: 'var(--warning)',
+      href: '/tasks/issues',
     },
     {
       label: '버그',
@@ -65,6 +76,7 @@ export function StatsCards({
       value: cancelled,
       icon: XCircle,
       color: 'var(--text-secondary)',
+      href: '/tasks/cancelled',
     },
     {
       label: '전체 진행률',
