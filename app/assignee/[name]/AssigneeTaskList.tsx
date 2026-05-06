@@ -24,12 +24,15 @@ export function AssigneeTaskList({ tasks, onUpdateField, onDeleteTask }: Assigne
   const [error, setError] = useState<string | null>(null)
   const [editingDescriptionId, setEditingDescriptionId] = useState<number | null>(null)
   const [assignees, setAssignees] = useState<string[]>([])
+  const [isLoadingAssignees, setIsLoadingAssignees] = useState(true)
   const containerRef = useRef<HTMLDivElement>(null)
 
   const categories = [...new Set(tasks.map(t => t.category))]
 
-  // 담당자 select 옵션: fetched 목록 + 현재 task들의 assignee를 머지해
-  // 과거 데이터로 현재 목록에 없는 담당자도 표시되도록 한다
+  // 담당자 select 옵션은 서버 props(tasks)와 클라이언트 fetch(getAssignees)가
+  // 같은 테이블을 다른 시점/필터로 읽기 때문에 합집합으로 머지한다.
+  // 특히 fetched 목록에서 현재 task의 assignee가 누락된 경우(예: stale snapshot,
+  // 담당자 페이지에서 부분집합 진입)에도 본인은 select에서 사라지지 않도록 한다.
   const assigneeOptions = useMemo(() => {
     const fromTasks = tasks
       .map(t => t.assignee)
@@ -41,10 +44,15 @@ export function AssigneeTaskList({ tasks, onUpdateField, onDeleteTask }: Assigne
     let cancelled = false
     getAssignees()
       .then(list => {
-        if (!cancelled) setAssignees(list)
+        if (cancelled) return
+        setAssignees(list)
+        setIsLoadingAssignees(false)
       })
       .catch(err => {
         console.error('담당자 목록 로드 실패:', err)
+        if (cancelled) return
+        setError('담당자 목록을 불러오지 못했습니다. 페이지를 새로고침해주세요.')
+        setIsLoadingAssignees(false)
       })
     return () => {
       cancelled = true
@@ -511,22 +519,23 @@ export function AssigneeTaskList({ tasks, onUpdateField, onDeleteTask }: Assigne
                             <label className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
                               <User className="w-4 h-4" style={{ color: 'var(--success)' }} />
                               담당자
-                              {isFieldUpdating(task.id, 'assignee') && (
+                              {(isFieldUpdating(task.id, 'assignee') || isLoadingAssignees) && (
                                 <Loader2 className="w-3 h-3 animate-spin" style={{ color: 'var(--accent)' }} />
                               )}
                             </label>
                             <select
                               value={task.assignee ?? ''}
                               onChange={(e) => handleFieldUpdate(task.id, 'assignee', e.target.value || null)}
-                              className="w-full px-3 py-2 rounded-lg outline-none text-sm cursor-pointer"
+                              disabled={isLoadingAssignees}
+                              className="w-full px-3 py-2 rounded-lg outline-none text-sm cursor-pointer disabled:opacity-60 disabled:cursor-wait"
                               style={{
                                 background: 'var(--bg-tertiary)',
                                 border: '1px solid var(--border)',
                                 color: 'var(--text-primary)',
                               }}
                             >
-                              <option value="" style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
-                                담당자를 선택하세요
+                              <option value="" disabled hidden style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
+                                {isLoadingAssignees ? '담당자 불러오는 중...' : '담당자를 선택하세요'}
                               </option>
                               {assigneeOptions.map(name => (
                                 <option key={name} value={name} style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
