@@ -7,7 +7,7 @@ import { AssigneeDonutChart } from '@/components/charts/AssigneeDonutChart'
 import { CategoryBarChart } from '@/components/charts/CategoryBarChart'
 import { GlowCard } from '@/components/ui/GlowCard'
 
-export const revalidate = 60 // Revalidate every 60 seconds
+export const revalidate = 0 // mutation이 client-side라 ISR을 끄고 매 요청 갱신
 
 export default async function Home() {
   const [tasks, categoryStats, assigneeStats] = await Promise.all([
