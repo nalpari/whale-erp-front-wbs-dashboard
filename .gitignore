@@ -51,3 +51,6 @@ next-env.d.ts
 # bkit & conductor
 .bkit/
 .conductor/
+
+# git worktrees
+.worktree/
